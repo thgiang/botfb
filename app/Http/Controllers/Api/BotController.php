@@ -14,6 +14,7 @@ class BotController extends Controller
         $validator = Validator::make($request->all(), [
             'cookie' => 'required',
             'frequency' => 'required|numeric',
+            'proxy' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -23,6 +24,7 @@ class BotController extends Controller
         $bot = new Bot();
         $bot->cookie = $request->post('cookie');
         $bot->frequency = $request->post('frequency');
+        $bot->proxy = $request->post('proxy');
         $bot->save();
         return response()->json(['status' => 'success', 'data' => $bot]);
     }

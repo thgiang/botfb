@@ -17,6 +17,10 @@ class CreateBotsTable extends Migration
             $table->bigIncrements('id');
             $table->text('cookie');
             $table->integer('frequency')->default(2);
+            $table->string('proxy', 255)->default('');
+            $table->boolean('is_valid')->default(true);
+            $table->integer('next_run_time')->default(0);
+            $table->text('error_log')->nullable();
             $table->timestamps();
         });
     }
