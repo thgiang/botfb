@@ -131,6 +131,105 @@ function commentPostByCookie($cookie, $dtsg, $postId, $commentContent, $stickerI
     }
 }
 
+function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php")
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $urlToCrawl,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: m.facebook.com",
+            "cache-control: max-age=0",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: same-origin",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: " . $cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+    $listIDs = null;
+
+    if ($postOwnerType == 'group') {
+        preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
+        if (isset($matches[2])) {
+            $listIDs = array_values(array_unique($matches[2]));
+        }
+    } elseif ($postOwnerType == 'user') {
+        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp;/", $response, $matches);
+        if (isset($matches[2])) {
+            $listIDs = array_values(array_unique($matches[2]));
+        }
+    } else {
+        preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);
+        if (isset($matches[1])) {
+            $listIDs = array_values(array_unique($matches[1]));
+        }
+    }
+
+    // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
+    if (count($listIDs) == 0) {
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
+        if (isset($nextCusor[0])) {
+            $nextCusor = "https://mbasic.facebook.com" . rtrim($nextCusor[0], '"');
+            return getRandomPostFromNewfeed($cookie, $proxy, $postOwnerType, $nextCusor);
+        } else {
+            return false;
+        }
+    }
+
+    return $listIDs;
+}
+
+function getUserInfoFromUID($uid, $proxy, $token = "EAABwzLixnjYBANPZCGhCAfydyUe912L1ZCci3qKvrai44gxeVHTb7FNWZB8JZB6knEUfyMVKBhxUQb7YJ2PqHZCjGL62ZAE3kZBdSSfNRDrSlWevG5CgpCRq483yvG5ETKXl7ZB1VwixMrmIxEc1Ctox9OET6l3ZBZBMmzLhZBoAZAFZBPL3a6BVhrkD1")
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://graph.facebook.com/" . $uid . "?access_token=" . $token,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET"
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    return json_decode($response);
+}
+
+
+function getUserInfoFromCookie($cookie, $proxy = null, $token = "EAABwzLixnjYBANPZCGhCAfydyUe912L1ZCci3qKvrai44gxeVHTb7FNWZB8JZB6knEUfyMVKBhxUQb7YJ2PqHZCjGL62ZAE3kZBdSSfNRDrSlWevG5CgpCRq483yvG5ETKXl7ZB1VwixMrmIxEc1Ctox9OET6l3ZBZBMmzLhZBoAZAFZBPL3a6BVhrkD1")
+{
+    preg_match("/c_user=([0-9]+);/", $cookie, $userID);
+    if (isset($userID[1])) {
+        return getUserInfoFromUID($userID[1], $proxy, $token);
+    }
+    return false;
+}
+
+
 function checkProxy($proxy)
 {
     $proxyHost = explode(":", $proxy)[0];
@@ -142,11 +241,10 @@ function checkProxy($proxy)
     }
 }
 
-// https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg
-function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy)
-{
+// Example: uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $cookie, $dtsg)
+function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null) {
     $curlGetImage = curl_init($imageURL);
-    $fileName = rand(0, 10000) . '.png';
+    $fileName = rand(0, 10000).'.png';
     $fp = fopen($fileName, 'w+');
     curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
     curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
@@ -157,7 +255,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy)
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://upload.facebook.com/_mupload_/photo/x/saveunpublished/?allow_spherical_photo=true&thumbnail_width=80&thumbnail_height=80&waterfall_id=bec27f53989369fe074a97aead0d03eb&waterfall_app_name=web_m_touch&waterfall_source=photo_comment&fb_dtsg=" . $dtsg . "&jazoest=21951&m_sess=&__csr=&__req=h&__a=" . $dtsg,
+        CURLOPT_URL => "https://upload.facebook.com/_mupload_/photo/x/saveunpublished/?allow_spherical_photo=true&thumbnail_width=80&thumbnail_height=80&waterfall_id=bec27f53989369fe074a97aead0d03eb&waterfall_app_name=web_m_touch&waterfall_source=photo_comment&fb_dtsg=".$dtsg."&jazoest=21951&m_sess=&__csr=&__req=h&__a=".$dtsg,
         CURLOPT_PROXY => $proxy,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
@@ -166,11 +264,11 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy)
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => array('photo' => new CURLFILE('/C:/Users/mrtro/Desktop/592ccac0a949b39f058a297fd1faa38e.jpg')),
+        CURLOPT_POSTFIELDS => array('photo'=> new CURLFile(getcwd()."\\".$fileName)),
         CURLOPT_HTTPHEADER => array(
             "authority: upload.facebook.com",
             "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
-            "content-type: multipart/form-data; boundary=----WebKitFormBoundaryHuCzq8wjF6P79jrA",
+            "content-type: multipart/form-data",
             "accept: */*",
             "origin: https://m.facebook.com",
             "sec-fetch-site: same-site",
@@ -178,7 +276,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy)
             "sec-fetch-dest: empty",
             "referer: https://m.facebook.com/",
             "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
-            "cookie: " . $cookie
+            "cookie: ".$cookie
         ),
     ));
 
@@ -186,7 +284,56 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy)
 
     curl_close($curl);
     $responseData = str_replace("for (;;);", "", $response);
-    print_r($response);
+    $json = json_decode($responseData);
+    unlink($fileName);
+    if (isset($json->payload) && isset($json->payload->fbid)) {
+        return $json->payload->fbid;
+    } else {
+        return false;
+    }
+}
+
+function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID) {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://m.facebook.com/stickers/".$stickerColletionID."/images/",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "POST",
+        CURLOPT_POSTFIELDS => "m_sess=&fb_dtsg=".$dtsg."&__csr=&__req=z",
+        CURLOPT_HTTPHEADER => array(
+            "authority: m.facebook.com",
+            "x-requested-with: XMLHttpRequest",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "x-response-format: JSONStream",
+            "content-type: application/x-www-form-urlencoded",
+            "accept: */*",
+            "origin: https://m.facebook.com",
+            "sec-fetch-site: same-origin",
+            "sec-fetch-mode: cors",
+            "sec-fetch-dest: empty",
+            "referer: https://m.facebook.com/story.php",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: ".$cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    $responseData = str_replace("for (;;);", "", $response);
+    $json = json_decode($responseData);
+    if (isset($json->payload) && isset($json->payload->payload)) {
+        $payload = $json->payload->payload;
+        return $payload[array_rand($payload, 1)]->id;
+    }
+
+    return false;
 }
 
 function RandomComment()
