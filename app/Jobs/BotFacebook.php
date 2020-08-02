@@ -59,7 +59,7 @@ class BotFacebook implements ShouldQueue
         }
 
 
-        $reactionType = 1;
+        $reactionType = rand(1, 4);
         $postId = '2613233488893674';
         $reaction = reactionPostByCookie($bot->cookie, $fbDtg, $postId, $reactionType, $bot->proxy);
         if ($reaction) {
