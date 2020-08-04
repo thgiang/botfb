@@ -293,11 +293,11 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null) {
     }
 }
 
-function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID) {
+function randomStickerOfCollection($cookie, $dtsg, $stickerCollectionId) {
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://m.facebook.com/stickers/".$stickerColletionID."/images/",
+        CURLOPT_URL => "https://m.facebook.com/stickers/".$stickerCollectionId."/images/",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
         CURLOPT_MAXREDIRS => 10,

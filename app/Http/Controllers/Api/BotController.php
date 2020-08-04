@@ -14,18 +14,20 @@ class BotController extends Controller
         $validator = Validator::make($request->all(), [
             'cookie' => 'required',
             'frequency' => 'required|numeric',
-            'proxy' => 'required'
+            'proxy' => 'required',
+            'sticker_collection_id' => 'required',
+            'comment_on' => 'required|boolean',
+            'start_time' => 'required|numeric|min:0|max:23',
+            'end_time' => 'required|numeric|min:0|max:23',
+            'reaction_type' => 'required|numeric',
+            'bot_target' => 'required'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
         }
 
-        $bot = new Bot();
-        $bot->cookie = $request->post('cookie');
-        $bot->frequency = $request->post('frequency');
-        $bot->proxy = $request->post('proxy');
-        $bot->save();
+        $bot = Bot::create($request->all());
         return response()->json(['status' => 'success', 'data' => $bot]);
     }
 }
