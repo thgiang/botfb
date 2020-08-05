@@ -38,8 +38,8 @@ class BotFacebook implements ShouldQueue
             return;
         }
         /*
-        if (empty($bot->proxy)) {
-            Log::error("Bot ID ".$bot->id." không có Proxy nên ko dám chạy kẻo bay Acc :D");
+        if (empty($bots->proxy)) {
+            Log::error("Bot ID ".$bots->id." không có Proxy nên ko dám chạy kẻo bay Acc :D");
             return;
         }
         */
@@ -69,7 +69,7 @@ class BotFacebook implements ShouldQueue
             $botLog->post_id = $postId;
             $botLog->save();
 
-            // Update next run time of bot
+            // Update next run time of bots
             $bot->next_run_time = time() + $bot->frequency * 60;
             $bot->save();
         }
@@ -85,7 +85,7 @@ class BotFacebook implements ShouldQueue
             $botLog->post_id = $postId;
             $botLog->save();
 
-            // Update next run time of bot
+            // Update next run time of bots
             $bot->next_run_time = time() + $bot->frequency * 60;
             $bot->save();
         }

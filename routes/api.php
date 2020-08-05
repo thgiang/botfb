@@ -17,10 +17,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/bot/new', 'Api\BotController@new');
+Route::post('/bots/new', 'Api\BotController@new');
 Route::get('/bots', 'Api\BotController@index');
-Route::get('/bot/logs', 'Api\BotController@logs');
-Route::get('/bot/delete', 'Api\BotController@delete');
+Route::get('/bots/logs', 'Api\BotController@logs');
+Route::get('/bots/delete', 'Api\BotController@delete');
 
 
 Route::get('/logs', 'Api\LogController@logs');
