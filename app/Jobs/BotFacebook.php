@@ -58,6 +58,16 @@ class BotFacebook implements ShouldQueue
             return;
         }
 
+        // Chọn $postId theo quy tắc đã setup
+        $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy);
+        if (!is_array($postIds)|| empty($postIds)) {
+            $bot->error_log = 'Không tìm được bài viết phù hợp vì vậy sẽ thử lại ở phiên chạy sau';
+            $bot->save();
+            return;
+        } else {
+            $postId = $postIds[rand(0, count($postIds) - 1)];
+        }
+
         // Chọn theo cảm xúc khách setup, nếu khách setup số linh tinh thì chọn random 1 trong các cảm xúc
         $reactions = array(1, 2, 3, 4, 6, 8, 16);
         if (in_array($bot->reaction_type, $reactions)) {
@@ -66,9 +76,7 @@ class BotFacebook implements ShouldQueue
             $reactionType = $reactions[rand(0, count($reactions) - 1)];
         }
 
-        // Chọn $postId theo quy tắc đã setup
-        $postId = '2613233488893674';
-
+        // Gửi reaction
         $reaction = reactionPostByCookie($bot->cookie, $fbDtg, $postId, $reactionType, $bot->proxy);
         if ($reaction) {
             $botLog = new BotLog();
