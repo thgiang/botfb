@@ -82,14 +82,14 @@ function reactionPostByCookie($cookie, $dtsg, $postId, $reactionType, $proxy = n
     }
 }
 
-function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerID = null, $photo_ids = null, $proxy = null)
+function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerID = null, $photoId = null, $proxy = null)
 {
     $commentContent = "comment_text=" . $commentContent;
     if ($stickerID != null) {
         $commentContent = $commentContent . "&sticker_id=" . $stickerID;
     }
-    if ($photo_ids != null) {
-        $commentContent = $commentContent . "&photo_ids[" . $photo_ids . "]=" . $photo_ids;
+    if ($photoId != null) {
+        $commentContent = $commentContent . "&photo_ids[" . $photoId . "]=" . $photoId;
     }
 
     $curl = curl_init();

@@ -63,19 +63,19 @@
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Comment dạo</label>
                                     <div class="col-sm-10">
-                                        <select class="form-control" v-model="formData.bot_comment">
+                                        <select class="form-control" v-model="formData.comment_on">
                                             <option :value=true>Bật</option>
                                             <option :value=false>Tắt</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div v-show="formData.bot_comment">
+                                <div v-show="formData.comment_on">
                                     <div class="form-group row">
                                         <div class="col-md-6 p-0">
                                             <label class="col-sm-6 col-form-label">Comment kèm ảnh</label>
                                             <div class="col-sm-12">
-                                                <select class="form-control" v-model="formData.bot_comment_use_image"
-                                                        @change="formData.bot_comment_use_image===true?formData.bot_comment_use_sticker=!formData.bot_comment_use_image:null">
+                                                <select class="form-control" v-model="comment_use_image"
+                                                        @change="comment_use_image===true?comment_use_sticker=!comment_use_image:null">
                                                     <option :value=true>Bật</option>
                                                     <option :value=false>Tắt</option>
                                                 </select>
@@ -84,8 +84,8 @@
                                         <div class="col-md-6 p-0">
                                             <label class="col-sm-6 col-form-label">Comment kèm sticker</label>
                                             <div class="col-sm-12">
-                                                <select class="form-control" v-model="formData.bot_comment_use_sticker"
-                                                        @change="formData.bot_comment_use_sticker===true?formData.bot_comment_use_image=!formData.bot_comment_use_sticker:null">
+                                                <select class="form-control" v-model="comment_use_sticker"
+                                                        @change="comment_use_sticker===true?comment_use_image=!comment_use_sticker:null">
                                                     <option :value=true>Bật</option>
                                                     <option :value=false>Tắt</option>
                                                 </select>
@@ -93,7 +93,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group row" v-if="formData.bot_comment_use_image">
+                                    <div class="form-group row" v-if="comment_use_image">
                                         <label class="col-sm-2 col-form-label">Ảnh để comment</label>
                                         <div class="col-sm-10">
                                             <input type="text" class="form-control"
@@ -104,11 +104,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group row" v-if="formData.bot_comment_use_sticker">
+                                    <div class="form-group row" v-if="comment_use_sticker">
                                         <label class="col-sm-2 col-form-label">Sticker để comment</label>
                                         <div class="col-sm-10">
                                             <div class="input-group input-group-sm">
-                                                <select class="form-control" v-model="formData.sticker_collection_id">
+                                                <select class="form-control"
+                                                        v-model="formData.comment_sticker_collection">
                                                     <option v-for="sticker_collection in sticker_collections_id"
                                                             :value="sticker_collection.id">{{ sticker_collection.name
                                                         }}
@@ -124,7 +125,7 @@
                                     <div class="form-group row">
                                         <label class="col-sm-2 col-form-label">Nội dung bình luận</label>
                                         <div class="col-sm-10">
-					<textarea class="form-control" v-model="formData.comments_content" rows="3"
+					<textarea class="form-control" v-model="formData.comment_content" rows="3"
                               placeholder="Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
 Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = lấy thời gian hiện tại | {enter} = xuống dòng"></textarea>
                                             <small class="text-muted">Lệnh: <b>{icon}</b> = random emoij, <b>{name}</b>
@@ -135,6 +136,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                                         </div>
                                     </div>
                                 </div>
+                                <!--
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Backlist (không
                                         bot trên những UID này)</label>
@@ -143,17 +145,22 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                                               placeholder="Nhập ID của những người bạn ghét như người yêu cũ, người yêu mới của người yêu người yêu cũ, người yêu cũ của người yêu mới của người yêu cũ... để khỏi tương tác. Mỗi ID một dòng"></textarea>
                                     </div>
                                 </div>
+                                -->
                                 <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label">Thời gian hoạt động</label>
                                     <div class="col-sm-4">
+                                        <label>Mỗi lần chạy cách nhau</label>
+                                        <select class="form-control" v-model="formData.frequency">
+                                            <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label>Bắt đầu từ</label>
                                         <select class="form-control" v-model="formData.start_time">
                                             <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
                                         </select>
                                     </div>
-                                    <div class="col-sm-2 text-center mt-1">
-                                        đến
-                                    </div>
                                     <div class="col-sm-4">
+                                        <label>Đến</label>
                                         <select class="form-control" v-model="formData.end_time">
                                             <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
                                         </select>
@@ -179,7 +186,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                                 <!--                                </div>-->
                                 <div class="form-group row">
                                     <div class="col-sm-12">
-                                        <button type="button" class="btn btn-block btn-primary btn-lg"
+                                        <button type="button" class="btn btn-block btn-success btn-sm"
                                                 @click="addBot"><i
                                             class="fas fa-shopping-cart"></i>
                                             TẠO BOT
@@ -202,23 +209,30 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
     const axios = require('axios');
     export default {
         mounted() {
-            this.formData.sticker_collection_id = this.sticker_collections_id[0].id;
+            this.formData.comment_sticker_collection = this.sticker_collections_id[0].id;
         },
         data() {
             return {
+                comment_use_sticker: false,
+                comment_use_image: false,
                 formData: {
-                    cookie: null,
+                    cookie: '',
+                    name: '',
+                    proxy: '',
+
                     bot_target: 'all',
                     reaction_type: 0,
-                    bot_comment: false,
-                    bot_comment_use_image: false,
-                    bot_comment_use_sticker: false,
-                    comment_image_url: null,
-                    sticker_collection_id: null,
-                    comments_content: null,
+
+                    comment_on: false,
+                    comment_image_url: '',
+                    comment_sticker_collection: '',
+                    comment_content: '',
+
+                    frequency: 5,
                     start_time: 8,
                     end_time: 20,
-                    black_list: null,
+
+                    black_list: '',
                 },
                 sticker_collections_id: [
                     {
@@ -1256,9 +1270,15 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
             }
         }, methods: {
             seeSticker: function () {
-                window.open('https://www.facebook.com/stickers/' + this.formData.sticker_collection_id, "_blank");
+                window.open('https://www.facebook.com/stickers/' + this.formData.comment_sticker_collection, "_blank");
             },
             addBot: function () {
+                if (!comment_use_sticker) {
+                    this.formData.comment_sticker_collection = '';
+                }
+                if (!comment_use_image) {
+                    this.formData.comment_image_url = '';
+                }
                 axios.post('/bots/add', this.formData)
                     .then(function (response) {
                         console.log(response);

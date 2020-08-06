@@ -5,7 +5,14 @@
       <paths name="139.180.156.247">
         <serverdata>
           <mappings>
-            <mapping deploy="/codedao.jas.plus/public_html" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="moshop-web">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

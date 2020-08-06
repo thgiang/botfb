@@ -101,15 +101,18 @@ class BotFacebook implements ShouldQueue
 
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
-            if (!empty($bot->sticker_collection_id)) {
-                $tmpStickerId = randomStickerOfCollection($bot->cookie, $fbDtg, $bot->sticker_collection_id);
+            if (!empty($bot->comment_sticker_collection)) {
+                $tmpStickerId = randomStickerOfCollection($bot->cookie, $fbDtg, $bot->comment_sticker_collection);
                 if ($tmpStickerId !== false) {
                     $stickerId = $tmpStickerId;
                 }
             }
-
+            $photoId = null;
+            if ($stickerId != null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
+                $photoId = uploadImageToFacebook($bot->comment_image_url, $bot->cookie, $fbDtg, $bot->proxy);
+            }
             // Gửi comment
-            $comment = commentPostByCookie($bot->cookie, $fbDtg, $postId, $commentContent, $stickerId, $bot->proxy);
+            $comment = commentPostByCookie($bot->cookie, $fbDtg, $postId, $commentContent, $stickerId, $photoId, $bot->proxy);
             if ($comment) {
                 $botLog = new BotLog();
                 $botLog->bot_id = $bot->id;

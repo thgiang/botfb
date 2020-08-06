@@ -16,7 +16,7 @@ class BotController extends Controller
             'name' => 'required',
             'frequency' => 'required|numeric',
             'proxy' => 'required',
-            'sticker_collection_id' => 'required',
+            'comment_sticker_collection' => 'required',
             'comment_on' => 'required|boolean',
             'start_time' => 'required|numeric|min:0|max:23',
             'end_time' => 'required|numeric|min:0|max:23',
