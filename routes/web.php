@@ -19,3 +19,7 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/test', 'HomeController@testJob')->name('test');
+
+Route::get('add', function () {
+    return view('bots.add');
+});
