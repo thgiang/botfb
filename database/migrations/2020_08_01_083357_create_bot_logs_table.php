@@ -20,7 +20,7 @@ class CreateBotLogsTable extends Migration
             $table->string('action', 191)->default('COMMENT');
             $table->string('comment_id', 191)->nullable();
             $table->string('sticker_id', 191)->nullable();
-            $table->text('comment_content');
+            $table->text('comment_content')->nullable();
             $table->timestamps();
         });
     }

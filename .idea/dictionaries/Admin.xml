@@ -4,6 +4,10 @@
       <w>commentid</w>
       <w>dtsg</w>
       <w>fillable</w>
+      <w>giay</w>
+      <w>ngay</w>
+      <w>phut</w>
+      <w>thang</w>
     </words>
   </dictionary>
 </component>

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Bot extends Model
 {
-    protected $fillable = ['cookie', 'frequency', 'proxy', 'sticker_collection_id', 'comment_on', 'comment_content',
+    protected $fillable = ['cookie', 'name', 'frequency', 'proxy', 'sticker_collection_id', 'comment_on', 'comment_content',
         'time_between', 'start_time', 'end_time', 'reaction_type', 'bot_target', 'black_list'];
 
 }

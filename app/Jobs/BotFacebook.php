@@ -94,6 +94,10 @@ class BotFacebook implements ShouldQueue
         if ($bot->comment_on) {
             // Build nội dung comment
             $commentContent = RandomComment();
+            $comments = explode(PHP_EOL, $bot->comment_content);
+            if (count($comments) > 0) {
+                $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)]);
+            }
 
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
@@ -125,6 +129,10 @@ class BotFacebook implements ShouldQueue
                     $end_time = strtotime('today +'.$bot->end_time.'hours');
                 }
                 $bot->next_run_time = min(max($start_time, time() + $bot->frequency * rand(75, 125) / 100 * 60), $end_time);
+                if ($bot->next_run_time >= $end_time) {
+                    // Nếu quá giờ chạy rồi thì thôi để mai
+                    $bot->next_run_time = $start_time + 24*60*60;
+                }
                 $bot->save();
             }
         }

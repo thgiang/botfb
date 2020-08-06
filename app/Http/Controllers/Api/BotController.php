@@ -13,6 +13,7 @@ class BotController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'cookie' => 'required',
+            'name' => 'required',
             'frequency' => 'required|numeric',
             'proxy' => 'required',
             'sticker_collection_id' => 'required',
