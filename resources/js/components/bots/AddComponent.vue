@@ -50,19 +50,19 @@
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Like dạo</label>
                                     <div class="col-sm-10">
-                                        <select class="form-control" v-model="formData.like_on">
+                                        <select class="form-control" v-model="formData.reaction_on">
                                             <option :value=true>Bật</option>
                                             <option :value=false>Tắt</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <div v-show="formData.like_on">
+                                <div v-show="formData.reaction_on">
                                     <div class="form-group row">
                                         <div class="col-md-6 p-0">
                                             <label class="col-sm-8 col-form-label">Mỗi lần like cách nhau</label>
                                             <div class="col-sm-12">
-                                                <select class="form-control" v-model="formData.like_frequency">
+                                                <select class="form-control" v-model="formData.reaction_frequency">
                                                     <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút
                                                     </option>
                                                 </select>
@@ -260,8 +260,8 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                     proxy: '',
                     bot_target: 'all',
 
-                    like_on: false,
-                    like_frequency: 5,
+                    reaction_on: false,
+                    reaction_frequency: 5,
                     reaction_type: 0,
 
                     comment_on: false,

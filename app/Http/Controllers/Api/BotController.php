@@ -16,7 +16,7 @@ class BotController extends Controller
             'name' => 'required',
             'proxy' => 'required',
             'comment_on' => 'required|boolean',
-            'like_on' => 'required|boolean',
+            'reaction_on' => 'required|boolean',
             'start_time' => 'required|numeric|min:0|max:23',
             'end_time' => 'required|numeric|min:0|max:23',
             'reaction_type' => 'required|numeric',

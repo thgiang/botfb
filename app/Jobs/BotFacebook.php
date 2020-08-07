@@ -100,7 +100,7 @@ class BotFacebook implements ShouldQueue
         } while (in_array($postId, $allPostReactioned));
 
 
-        if ($bot->like_on) {
+        if ($bot->reaction_on) {
             // Chọn theo cảm xúc khách setup, nếu khách setup số linh tinh thì chọn random 1 trong các cảm xúc
             $reactions = array(1, 2, 3, 4, 6, 8, 16);
             if (in_array($bot->reaction_type, $reactions)) {
@@ -164,7 +164,7 @@ class BotFacebook implements ShouldQueue
             $start_time = strtotime('today +' . $bot->start_time . 'hours');
             $end_time = strtotime('today +' . $bot->end_time . 'hours');
         }
-        $frequency_ratio = ($bot->comment_frequency + $bot->like_frequency) / 2;
+        $frequency_ratio = ($bot->comment_frequency + $bot->reaction_frequency) / 2;
         $bot->next_run_time = min(max($start_time, time() + $frequency_ratio * rand(75, 125) / 100 * 60), $end_time);
         if ($bot->next_run_time >= $end_time) {
             // Nếu quá giờ chạy rồi thì thôi để mai
