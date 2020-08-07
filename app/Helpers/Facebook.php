@@ -82,14 +82,14 @@ function reactionPostByCookie($cookie, $dtsg, $postId, $reactionType, $proxy = n
     }
 }
 
-function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerID = null, $photo_ids = null, $proxy = null)
+function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerID = null, $photoId = null, $proxy = null)
 {
     $commentContent = "comment_text=" . $commentContent;
     if ($stickerID != null) {
         $commentContent = $commentContent . "&sticker_id=" . $stickerID;
     }
-    if ($photo_ids != null) {
-        $commentContent = $commentContent . "&photo_ids[" . $photo_ids . "]=" . $photo_ids;
+    if ($photoId != null) {
+        $commentContent = $commentContent . "&photo_ids[" . $photoId . "]=" . $photoId;
     }
 
     $curl = curl_init();
@@ -125,7 +125,19 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
     $response = curl_exec($curl);
     $responseData = str_replace("for (;;);", "", $response);
     if (isset(json_decode($responseData)->payload)) {
-        return true;
+        $data = json_decode($responseData);
+        $html = $data->payload->actions[1]->html;
+        $re = '/data-commentid="(.*)" data-sigil="comment-body"/s';
+        $re2 = '/commentID\":\"(.*)\"}/';
+        preg_match($re, $html, $matches);
+        preg_match($re2, $html, $matches2);
+        if (count($matches) > 1) {
+            return $matches[1];
+        }
+        if (count($matches2) > 1) {
+            return $matches2[1];
+        }
+        return false;
     } else {
         return false;
     }
@@ -171,7 +183,7 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
         if (isset($matches[2])) {
             $listIDs = array_values(array_unique($matches[2]));
         }
-    } elseif ($postOwnerType == 'user') {
+    } elseif ($postOwnerType == 'friend_and_fanpage') {
         preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp;/", $response, $matches);
         if (isset($matches[2])) {
             $listIDs = array_values(array_unique($matches[2]));
@@ -217,6 +229,46 @@ function getUserInfoFromUID($uid, $proxy, $token = "EAABwzLixnjYBANPZCGhCAfydyUe
 
     curl_close($curl);
     return json_decode($response);
+}
+
+
+function getPostOwner($cookie, $proxy = null, $postID)
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://mbasic.facebook.com/" . $postID,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: mbasic.facebook.com",
+            "cache-control: max-age=0",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: none",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: " . $cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    preg_match("#bh bi bj bk\"><span><strong><a href=\"\/(.*?)\/\?refid=52&amp;__tn__=C-R\">(.*?)\<\/a#", $response, $postOwner);
+    if (isset($postOwner[1])) {
+        return $postOwner;
+    }
+    return [];
 }
 
 
@@ -338,10 +390,27 @@ function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID)
     return false;
 }
 
-function RandomComment()
+function DoShortCode($str)
+{
+    $str = str_replace('{icon}', RandomEmotion(), $str);
+    $str = str_replace('{enter}', "\n", $str);
+    $str = str_replace('{ngay}', date("d", time()), $str);
+    $str = str_replace('{thang}', date("m", time()), $str);
+    $str = str_replace('{gio}', date("H", time()), $str);
+    $str = str_replace('{phut}', date("i", time()), $str);
+    $str = str_replace('{giay}', date("s", time()), $str);
+    return $str;
+}
+
+function RandomEmotion()
 {
     $emotions = array("💦", "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘", "😗", "😙", "😚", "☺", "🙂", "🤗", "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥", "😮", "🤐", "😯", "😪", "😫", "😴", "😌", "😛", "😜", "😝", "🤤", "😒", "😓", "😔", "😕", "🙃", "🤑", "😲", "☹", "🙁", "😖", "😞", "😟", "😤", "😢", "😭", "😦", "😧", "😨", "😩", "🤯", "😬", "😰", "😱", "😳", "🤪", "😵", "😡", "😠", "🤬", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🤠", "🤡", "🤥", "🤫", "🤭", "🧐", "🤓", "😈", "👿", "👹", "👺", "💀", "☠", "👻", "👽", "👾", "🤖", "💩", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🙈", "🙉", "🙊", "👶", "🧒", "👦", "👧", "🧑", "👨", "👩", "🧓", "👴", "👵", "🤳", "💪", "👈", "👉", "☝", "👆", "🖕", "👇", "✌", "🤞", "🖖", "🤘", "🤙", "🖐", "✋", "👌", "👍", "👎", "✊", "👊", "🤛", "🤜", "🤚", "👋", "🤟", "✍", "👏", "👐", "🙌", "🤲", "🙏", "🤝", "💅", "👂", "👃", "👣", "👀", "👁", "👁", "‍", "🗨", "🧠", "👅", "👄", "💋", "💘", "❤", "💓", "💔", "💕", "💖", "💗", "💙", "💚", "💛", "🧡", "💜", "🖤", "💝", "💞", "💟", "❣", "💌", "💤", "💢", "💣", "💥", "💦", "💨", "💫", "💬", "🗨", "🗯", "💭", "🤴", "👸", "👳", "‍", "♂", "👳", "‍", "♀", "👲", "🧕", "🧔", "👱", "‍", "♂", "👱", "‍", "♀", "🤵", "👰", "🤰", "🤱", "👼", "🙍", "‍", "♂", "🙍", "‍", "♀", "🙎", "‍", "♂", "🙎", "‍", "♀", "🙅", "‍", "♂", "🙅", "‍", "♀", "🙆", "‍", "♂", "🙆", "‍", "♀", "💁", "‍", "♂", "💁", "‍", "♀", "🙋", "‍", "♂", "🙋", "‍", "♀", "🙇", "‍", "♂", "🙇", "‍", "♀", "🤦", "‍", "♂", "🤦", "‍", "♀", "🤷", "‍", "♂", "🤷", "‍", "♀", "💆", "‍", "♂", "💆", "‍", "♀", "💇", "‍", "♂", "💇", "‍", "♀", "🚶", "‍", "♂", "🚶", "‍", "♀", "🏃", "‍", "♂", "🏃", "‍", "♀", "💃", "🕺", "🛀", "🛌", "🕴", "🗣", "👤", "👥", "👫", "👬", "👭", "👩", "‍", "❤", "‍", "💋", "‍", "👨", "👨", "‍", "❤", "‍", "💋", "‍", "👨", "👩", "‍", "❤", "‍", "💋", "‍", "👩", "👩", "‍", "❤", "‍", "👨", "👨", "‍", "❤", "‍", "👨", "👩", "‍", "❤", "‍", "👩");
-    $emotion = $emotions[rand(0, count($emotions) - 1)];
+    return $emotions[rand(0, count($emotions) - 1)];
+}
+
+function RandomComment()
+{
+    $emotion = RandomEmotion();
     $comments = array("Anh có xô hay chậu gì không? Hứng hộ tình cảm của em dành cho anh đi ",
         "Anh vô gia cư hay sao cứ ở trong đầu em mãi...",
         "Anh có thích Sơn Tùng không? Em không phải Sơn Tùng nhưng em vẫn âm thầm bên anh",
