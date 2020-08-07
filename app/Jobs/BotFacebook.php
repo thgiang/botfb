@@ -70,10 +70,11 @@ class BotFacebook implements ShouldQueue
 
         // Chọn $postId theo quy tắc đã setup + kiểm tra xem $postId đã từng tồn tại trong DB chưa
         $tryFindPost = 0;
-        $allPostReactioned = Log::where('bot_id', $bot->id)->value('post_id');
+        $allPostReactioned = BotLog::where('bot_id', 1)->pluck('post_id')->toArray();
         $postId = '';
         $newsFeedIsEmpty = true;
         do {
+            $tryFindPost++;
             if ($tryFindPost > 3) {
                 if ($newsFeedIsEmpty) {
                     $bot->error_log = 'Đọc news feed ko có bài viết nào';
@@ -94,12 +95,11 @@ class BotFacebook implements ShouldQueue
             $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy);
             if (is_array($postIds) && !empty($postIds)) {
                 $newsFeedIsEmpty = false;
-                $difIds = array_diff($allPostReactioned, $postIds);
+                $difIds = array_diff($postIds, $allPostReactioned);
                 if (count($difIds) > 0) {
                     $postId = $difIds[rand(0, count($difIds) - 1)];
                 }
             }
-            $tryFindPost++;
         } while ( $postId == '' || in_array($postId, $allPostReactioned));
 
         // Lấy thời gian bắt đầu và kết thúc của bot

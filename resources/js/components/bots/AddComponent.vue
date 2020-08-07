@@ -164,11 +164,8 @@
 					<textarea class="form-control" v-model="formData.comment_content" rows="3"
                               placeholder="Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
 Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng"></textarea>
-                                            <small class="text-muted">Lệnh: <b>{icon}</b> = random emoij, <b>{name}</b>
-                                                =
-                                                tên facebook chủ post,
-                                                <b>{time}</b> = lấy thời gian hiện tại, <b>{enter}</b> = xuống
-                                                dòng.</small>
+                                            <small class="text-muted">Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
+                                                Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng</small>
                                         </div>
                                     </div>
                                 </div>
@@ -193,13 +190,13 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                     <div class="col-sm-6">
                                         <label>Bắt đầu từ</label>
                                         <select class="form-control" v-model="formData.start_time">
-                                            <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
+                                            <option v-for="hour in 24" :value="hour-1">{{ hour -1 }} giờ</option>
                                         </select>
                                     </div>
                                     <div class="col-sm-6">
                                         <label>Đến</label>
                                         <select class="form-control" v-model="formData.end_time">
-                                            <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
+                                            <option v-for="hour in 24" :value="hour - 1">{{ hour - 1 }} giờ</option>
                                         </select>
                                     </div>
                                 </div>

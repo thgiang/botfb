@@ -32,6 +32,7 @@ function getFbDtsg($cookie, $proxy = null)
     $response = curl_exec($curl);
 
     curl_close($curl);
+
     if (preg_match("/name=\"fb_dtsg\" value=\"(.*?)\" autocomplete=\"off\"/", $response, $dtsg)) {
         return $dtsg[1];
     } else {
@@ -126,6 +127,11 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
     $responseData = str_replace("for (;;);", "", $response);
     if (isset(json_decode($responseData)->payload)) {
         $data = json_decode($responseData);
+
+        file_put_contents('fb.txt', $cookie."\n", FILE_APPEND);
+        file_put_contents('fb.txt', $dtsg."\n", FILE_APPEND);
+        file_put_contents('fb.txt', $postID."\n", FILE_APPEND);
+        file_put_contents('fb.txt', $response."\n\n\n", FILE_APPEND);
         $html = $data->payload->actions[1]->html;
         $re = '/data-commentid="(.*)" data-sigil="comment-body"/s';
         $re2 = '/commentID\":\"(.*)\"}/';
@@ -396,6 +402,7 @@ function DoShortCode($str)
     $str = str_replace('{enter}', "\n", $str);
     $str = str_replace('{ngay}', date("d", time()), $str);
     $str = str_replace('{thang}', date("m", time()), $str);
+    $str = str_replace('{nam}', date("Y", time()), $str);
     $str = str_replace('{gio}', date("H", time()), $str);
     $str = str_replace('{phut}', date("i", time()), $str);
     $str = str_replace('{giay}', date("s", time()), $str);
@@ -418,7 +425,7 @@ function RandomComment()
         "Nghe nói con gái như em rất là khó gần?\nAnh hỏi cho vui chứ không có cần :'>",
         "Không có gì là mãi mãi. Chỉ có từ \"Mãi mãi\" mới là mãi mãi.",
         "Có 1 sự thật là… bạn sẽ trẻ mãi… cho tới tận lúc già.",
-        "Bí quyết để sống lâu là đừng bao giờ ngừng thở.",
+        "Bí quyết để sống lâum là đừng bao giờ ngừng thở.",
         "Trứng rán cần mỡ, bắp cần bơ, yêu không cần cớ, cần cậu cơ!",
         "Hôm nay anh học toán hình. Tròn, vuông chẳng có; toàn hình bóng em ♥",
         "Đôi môi này chỉ ăn cơm với cá. Đã bao giờ biết thơm má ai đâu :*",

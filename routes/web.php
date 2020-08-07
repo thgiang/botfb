@@ -21,7 +21,7 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/test', 'HomeController@testJob')->name('test');
+Route::get('/test2', 'HomeController@testJob')->name('test2');
 
 Route::get('add', function () {
     return view('bots.add');
