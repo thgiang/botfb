@@ -197,10 +197,10 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
 
     // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
     if (count($listIDs) == 0) {
-        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
-        if (isset($nextCusor[0])) {
-            $nextCusor = "https://mbasic.facebook.com" . rtrim($nextCusor[0], '"');
-            return getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor);
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
+        if (isset($nextCursor[0])) {
+            $nextCursor = "https://mbasic.facebook.com" . rtrim($nextCursor[0], '"');
+            return getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor);
         } else {
             return false;
         }
@@ -232,7 +232,7 @@ function getUserInfoFromUID($uid, $proxy, $token = "EAABwzLixnjYBANPZCGhCAfydyUe
 }
 
 
-function getPostOwner($cookie, $proxy = null, $postID)
+function getPostOwner($cookie, $proxy = null, $postID = '')
 {
     $curl = curl_init();
 

@@ -36,8 +36,9 @@ class CreateBotsTable extends Migration
             $table->text('black_list')->nullable();
             $table->text('white_list')->nullable();
 
-            $table->boolean('is_valid')->default(true);
-            $table->integer('next_run_time')->default(0);
+            $table->integer('count_error')->default(0);
+            $table->integer('next_reaction_time')->default(0);
+            $table->integer('next_comment_time')->default(0);
             $table->text('error_log')->nullable();
             $table->timestamps();
         });

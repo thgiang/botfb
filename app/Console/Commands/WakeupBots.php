@@ -39,10 +39,12 @@ class WakeupBots extends Command
      */
     public function handle()
     {
-        Bot::where('is_valid', 1)->where('next_run_time', '<=', time())->chunkById(100, function ($bots) {
+        Bot::where('count_error', '<', config('bot.max_try_time'))->where(function ($query) {
+            $query->where('next_reaction_time', '<=', time())->orWhere('next_comment_time', '<=', time());
+        })->chunkById(100, function ($bots) {
             foreach ($bots as $bot) {
                 BotFacebook::dispatch($bot->id);
-           }
+            }
         });
     }
 }
