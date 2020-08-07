@@ -200,7 +200,7 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
         preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
         if (isset($nextCusor[0])) {
             $nextCusor = "https://mbasic.facebook.com" . rtrim($nextCusor[0], '"');
-            return getRandomPostFromNewfeed($cookie, $proxy, $postOwnerType, $nextCusor);
+            return getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor);
         } else {
             return false;
         }

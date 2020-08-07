@@ -34,6 +34,7 @@
                                                placeholder="Định dạng IP:Port">
                                     </div>
                                 </div>
+
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Tương tác với</label>
                                     <div class="col-sm-10">
@@ -45,21 +46,46 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label">Cảm xúc</label>
+                                    <label class="col-sm-2 col-form-label">Like dạo</label>
                                     <div class="col-sm-10">
-                                        <select class="form-control" v-model="formData.reaction_type">
-                                            <option :value="0">Ngẫu nhiên</option>
-                                            <option :value="1">LIKE (Thích)</option>
-                                            <option :value="2">LOVE (Yêu thích)</option>
-                                            <option :value="16">CARE (Thương thương)</option>
-                                            <option :value="4">HAHA</option>
-                                            <option :value="3">WOW</option>
-                                            <option :value="6">SAD (Buồn)</option>
-                                            <option :value="8">ANGRY (Phẫn nộ)</option>
+                                        <select class="form-control" v-model="formData.like_on">
+                                            <option :value=true>Bật</option>
+                                            <option :value=false>Tắt</option>
                                         </select>
                                     </div>
                                 </div>
+
+                                <div v-show="formData.like_on">
+                                    <div class="form-group row">
+                                        <div class="col-md-6 p-0">
+                                            <label class="col-sm-8 col-form-label">Mỗi lần like cách nhau</label>
+                                            <div class="col-sm-12">
+                                                <select class="form-control" v-model="formData.like_frequency">
+                                                    <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 p-0">
+                                            <label class="col-sm-6 col-form-label">Cảm xúc</label>
+                                            <div class="col-sm-12">
+                                                <select class="form-control" v-model="formData.reaction_type">
+                                                    <option :value="0">Ngẫu nhiên</option>
+                                                    <option :value="1">LIKE (Thích)</option>
+                                                    <option :value="2">LOVE (Yêu thích)</option>
+                                                    <option :value="16">CARE (Thương thương)</option>
+                                                    <option :value="4">HAHA</option>
+                                                    <option :value="3">WOW</option>
+                                                    <option :value="6">SAD (Buồn)</option>
+                                                    <option :value="8">ANGRY (Phẫn nộ)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Comment dạo</label>
                                     <div class="col-sm-10">
@@ -69,9 +95,19 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div v-show="formData.comment_on">
                                     <div class="form-group row">
-                                        <div class="col-md-6 p-0">
+                                        <div class="col-md-4 p-0">
+                                            <label class="col-sm-8 col-form-label">Mỗi lần comment cách nhau</label>
+                                            <div class="col-sm-12">
+                                                <select class="form-control" v-model="formData.comment_frequency">
+                                                    <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 p-0">
                                             <label class="col-sm-6 col-form-label">Comment kèm ảnh</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="comment_use_image"
@@ -81,8 +117,8 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 p-0">
-                                            <label class="col-sm-6 col-form-label">Comment kèm sticker</label>
+                                        <div class="col-md-4 p-0">
+                                            <label class="col-sm-8 col-form-label">Comment kèm sticker</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="comment_use_sticker"
                                                         @change="comment_use_sticker===true?comment_use_image=!comment_use_sticker:null">
@@ -127,7 +163,7 @@
                                         <div class="col-sm-10">
 					<textarea class="form-control" v-model="formData.comment_content" rows="3"
                               placeholder="Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
-Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = lấy thời gian hiện tại | {enter} = xuống dòng"></textarea>
+Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng"></textarea>
                                             <small class="text-muted">Lệnh: <b>{icon}</b> = random emoij, <b>{name}</b>
                                                 =
                                                 tên facebook chủ post,
@@ -136,28 +172,31 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Backlist (không
-                                        bot trên những UID này)</label>
+                                        tương tác trên những UID này)</label>
                                     <div class="col-sm-10">
-                                    <textarea class="form-control" id="backlist" rows="3" v-model="formData.black_list"
-                                              placeholder="Nhập ID của những người bạn ghét như người yêu cũ, người yêu mới của người yêu người yêu cũ, người yêu cũ của người yêu mới của người yêu cũ... để khỏi tương tác. Mỗi ID một dòng"></textarea>
+                                    <textarea class="form-control" rows="3" v-model="formData.black_list"
+                                              placeholder="Mỗi UID một dòng"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <div class="col-sm-4">
-                                        <label>Mỗi lần chạy cách nhau</label>
-                                        <select class="form-control" v-model="formData.frequency">
-                                            <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút</option>
-                                        </select>
+                                    <label class="col-sm-2 col-form-label">Whitelist (ưu tiên tương tác trên những UID
+                                        này)</label>
+                                    <div class="col-sm-10">
+                                    <textarea class="form-control" rows="3" v-model="formData.white_list"
+                                              placeholder="Mỗi UID một dòng"></textarea>
                                     </div>
-                                    <div class="col-sm-4">
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6">
                                         <label>Bắt đầu từ</label>
                                         <select class="form-control" v-model="formData.start_time">
                                             <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
                                         </select>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-6">
                                         <label>Đến</label>
                                         <select class="form-control" v-model="formData.end_time">
                                             <option v-for="hour in 24" :value="hour">{{ hour }} giờ</option>
@@ -205,6 +244,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
 
 <script>
     import Swal from 'sweetalert2'
+
     const axios = require('axios');
     export default {
         mounted() {
@@ -218,20 +258,23 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                     cookie: '',
                     name: '',
                     proxy: '',
-
                     bot_target: 'all',
+
+                    like_on: false,
+                    like_frequency: 5,
                     reaction_type: 0,
 
                     comment_on: false,
+                    comment_frequency: 5,
                     comment_image_url: '',
                     comment_sticker_collection: '',
                     comment_content: '',
 
-                    frequency: 5,
                     start_time: 8,
                     end_time: 20,
 
                     black_list: '',
+                    white_list: '',
                 },
                 sticker_collections_id: [
                     {
@@ -1280,15 +1323,15 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = l�
                 }
                 axios.post('/api/bots/new', this.formData)
                     .then(function (response) {
-                        if(response.data.status === "error") {
+                        if (response.data.status === "error") {
                             Swal.fire({
                                 icon: response.data.status,
-                                title: response.data.message
+                                text: response.data.message
                             });
                         } else {
                             Swal.fire({
                                 icon: response.data.status,
-                                title: response.data.message
+                                text: response.data.message
                             });
                         }
                         console.log(response);

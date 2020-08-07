@@ -2148,6 +2148,45 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -2165,15 +2204,18 @@ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
         name: '',
         proxy: '',
         bot_target: 'all',
+        like_on: false,
+        like_frequency: 5,
         reaction_type: 0,
         comment_on: false,
+        comment_frequency: 5,
         comment_image_url: '',
         comment_sticker_collection: '',
         comment_content: '',
-        frequency: 5,
         start_time: 8,
         end_time: 20,
-        black_list: ''
+        black_list: '',
+        white_list: ''
       },
       sticker_collections_id: [{
         'id': '2707173052857060',
@@ -3227,12 +3269,12 @@ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
         if (response.data.status === "error") {
           sweetalert2__WEBPACK_IMPORTED_MODULE_0___default.a.fire({
             icon: response.data.status,
-            title: response.data.message
+            text: response.data.message
           });
         } else {
           sweetalert2__WEBPACK_IMPORTED_MODULE_0___default.a.fire({
             icon: response.data.status,
-            title: response.data.message
+            text: response.data.message
           });
         }
 
@@ -42237,7 +42279,7 @@ var render = function() {
                 _vm._v(" "),
                 _c("div", { staticClass: "form-group row" }, [
                   _c("label", { staticClass: "col-sm-2 col-form-label" }, [
-                    _vm._v("Cảm xúc")
+                    _vm._v("Like dạo")
                   ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-sm-10" }, [
@@ -42248,8 +42290,8 @@ var render = function() {
                           {
                             name: "model",
                             rawName: "v-model",
-                            value: _vm.formData.reaction_type,
-                            expression: "formData.reaction_type"
+                            value: _vm.formData.like_on,
+                            expression: "formData.like_on"
                           }
                         ],
                         staticClass: "form-control",
@@ -42265,7 +42307,7 @@ var render = function() {
                               })
                             _vm.$set(
                               _vm.formData,
-                              "reaction_type",
+                              "like_on",
                               $event.target.multiple
                                 ? $$selectedVal
                                 : $$selectedVal[0]
@@ -42274,41 +42316,170 @@ var render = function() {
                         }
                       },
                       [
-                        _c("option", { domProps: { value: 0 } }, [
-                          _vm._v("Ngẫu nhiên")
+                        _c("option", { domProps: { value: true } }, [
+                          _vm._v("Bật")
                         ]),
                         _vm._v(" "),
-                        _c("option", { domProps: { value: 1 } }, [
-                          _vm._v("LIKE (Thích)")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 2 } }, [
-                          _vm._v("LOVE (Yêu thích)")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 16 } }, [
-                          _vm._v("CARE (Thương thương)")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 4 } }, [
-                          _vm._v("HAHA")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 3 } }, [
-                          _vm._v("WOW")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 6 } }, [
-                          _vm._v("SAD (Buồn)")
-                        ]),
-                        _vm._v(" "),
-                        _c("option", { domProps: { value: 8 } }, [
-                          _vm._v("ANGRY (Phẫn nộ)")
+                        _c("option", { domProps: { value: false } }, [
+                          _vm._v("Tắt")
                         ])
                       ]
                     )
                   ])
                 ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: _vm.formData.like_on,
+                        expression: "formData.like_on"
+                      }
+                    ]
+                  },
+                  [
+                    _c("div", { staticClass: "form-group row" }, [
+                      _c("div", { staticClass: "col-md-6 p-0" }, [
+                        _c(
+                          "label",
+                          { staticClass: "col-sm-8 col-form-label" },
+                          [_vm._v("Mỗi lần like cách nhau")]
+                        ),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-sm-12" }, [
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.formData.like_frequency,
+                                  expression: "formData.like_frequency"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    _vm.formData,
+                                    "like_frequency",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            _vm._l(60, function(minutes) {
+                              return _c(
+                                "option",
+                                { domProps: { value: minutes } },
+                                [
+                                  _vm._v(
+                                    _vm._s(minutes) +
+                                      " phút\n                                                    "
+                                  )
+                                ]
+                              )
+                            }),
+                            0
+                          )
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-md-6 p-0" }, [
+                        _c(
+                          "label",
+                          { staticClass: "col-sm-6 col-form-label" },
+                          [_vm._v("Cảm xúc")]
+                        ),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-sm-12" }, [
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.formData.reaction_type,
+                                  expression: "formData.reaction_type"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    _vm.formData,
+                                    "reaction_type",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            [
+                              _c("option", { domProps: { value: 0 } }, [
+                                _vm._v("Ngẫu nhiên")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 1 } }, [
+                                _vm._v("LIKE (Thích)")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 2 } }, [
+                                _vm._v("LOVE (Yêu thích)")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 16 } }, [
+                                _vm._v("CARE (Thương thương)")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 4 } }, [
+                                _vm._v("HAHA")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 3 } }, [
+                                _vm._v("WOW")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 6 } }, [
+                                _vm._v("SAD (Buồn)")
+                              ]),
+                              _vm._v(" "),
+                              _c("option", { domProps: { value: 8 } }, [
+                                _vm._v("ANGRY (Phẫn nộ)")
+                              ])
+                            ]
+                          )
+                        ])
+                      ])
+                    ])
+                  ]
+                ),
                 _vm._v(" "),
                 _c("div", { staticClass: "form-group row" }, [
                   _c("label", { staticClass: "col-sm-2 col-form-label" }, [
@@ -42375,7 +42546,65 @@ var render = function() {
                   },
                   [
                     _c("div", { staticClass: "form-group row" }, [
-                      _c("div", { staticClass: "col-md-6 p-0" }, [
+                      _c("div", { staticClass: "col-md-4 p-0" }, [
+                        _c(
+                          "label",
+                          { staticClass: "col-sm-8 col-form-label" },
+                          [_vm._v("Mỗi lần comment cách nhau")]
+                        ),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-sm-12" }, [
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.formData.comment_frequency,
+                                  expression: "formData.comment_frequency"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    _vm.formData,
+                                    "comment_frequency",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            _vm._l(60, function(minutes) {
+                              return _c(
+                                "option",
+                                { domProps: { value: minutes } },
+                                [
+                                  _vm._v(
+                                    _vm._s(minutes) +
+                                      " phút\n                                                    "
+                                  )
+                                ]
+                              )
+                            }),
+                            0
+                          )
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "col-md-4 p-0" }, [
                         _c(
                           "label",
                           { staticClass: "col-sm-6 col-form-label" },
@@ -42433,10 +42662,10 @@ var render = function() {
                         ])
                       ]),
                       _vm._v(" "),
-                      _c("div", { staticClass: "col-md-6 p-0" }, [
+                      _c("div", { staticClass: "col-md-4 p-0" }, [
                         _c(
                           "label",
-                          { staticClass: "col-sm-6 col-form-label" },
+                          { staticClass: "col-sm-8 col-form-label" },
                           [_vm._v("Comment kèm sticker")]
                         ),
                         _vm._v(" "),
@@ -42650,7 +42879,7 @@ var render = function() {
                           attrs: {
                             rows: "3",
                             placeholder:
-                              "Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận\nLệnh: {icon} = random emoij | {name} = tên facebook chủ post | {time} = lấy thời gian hiện tại | {enter} = xuống dòng"
+                              "Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận\nLệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng"
                           },
                           domProps: { value: _vm.formData.comment_content },
                           on: {
@@ -42676,7 +42905,7 @@ var render = function() {
                 _c("div", { staticClass: "form-group row" }, [
                   _c("label", { staticClass: "col-sm-2 col-form-label" }, [
                     _vm._v(
-                      "Backlist (không\n                                        bot trên những UID này)"
+                      "Backlist (không\n                                        tương tác trên những UID này)"
                     )
                   ]),
                   _vm._v(" "),
@@ -42691,12 +42920,7 @@ var render = function() {
                         }
                       ],
                       staticClass: "form-control",
-                      attrs: {
-                        id: "backlist",
-                        rows: "3",
-                        placeholder:
-                          "Nhập ID của những người bạn ghét như người yêu cũ, người yêu mới của người yêu người yêu cũ, người yêu cũ của người yêu mới của người yêu cũ... để khỏi tương tác. Mỗi ID một dòng"
-                      },
+                      attrs: { rows: "3", placeholder: "Mỗi UID một dòng" },
                       domProps: { value: _vm.formData.black_list },
                       on: {
                         input: function($event) {
@@ -42715,51 +42939,43 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("div", { staticClass: "form-group row" }, [
-                  _c("div", { staticClass: "col-sm-4" }, [
-                    _c("label", [_vm._v("Mỗi lần chạy cách nhau")]),
-                    _vm._v(" "),
-                    _c(
-                      "select",
-                      {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.formData.frequency,
-                            expression: "formData.frequency"
-                          }
-                        ],
-                        staticClass: "form-control",
-                        on: {
-                          change: function($event) {
-                            var $$selectedVal = Array.prototype.filter
-                              .call($event.target.options, function(o) {
-                                return o.selected
-                              })
-                              .map(function(o) {
-                                var val = "_value" in o ? o._value : o.value
-                                return val
-                              })
-                            _vm.$set(
-                              _vm.formData,
-                              "frequency",
-                              $event.target.multiple
-                                ? $$selectedVal
-                                : $$selectedVal[0]
-                            )
-                          }
-                        }
-                      },
-                      _vm._l(60, function(minutes) {
-                        return _c("option", { domProps: { value: minutes } }, [
-                          _vm._v(_vm._s(minutes) + " phút")
-                        ])
-                      }),
-                      0
+                  _c("label", { staticClass: "col-sm-2 col-form-label" }, [
+                    _vm._v(
+                      "Whitelist (ưu tiên tương tác trên những UID\n                                        này)"
                     )
                   ]),
                   _vm._v(" "),
-                  _c("div", { staticClass: "col-sm-4" }, [
+                  _c("div", { staticClass: "col-sm-10" }, [
+                    _c("textarea", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.formData.white_list,
+                          expression: "formData.white_list"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      attrs: { rows: "3", placeholder: "Mỗi UID một dòng" },
+                      domProps: { value: _vm.formData.white_list },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.$set(
+                            _vm.formData,
+                            "white_list",
+                            $event.target.value
+                          )
+                        }
+                      }
+                    })
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group row" }, [
+                  _c("div", { staticClass: "col-sm-6" }, [
                     _c("label", [_vm._v("Bắt đầu từ")]),
                     _vm._v(" "),
                     _c(
@@ -42803,7 +43019,7 @@ var render = function() {
                     )
                   ]),
                   _vm._v(" "),
-                  _c("div", { staticClass: "col-sm-4" }, [
+                  _c("div", { staticClass: "col-sm-6" }, [
                     _c("label", [_vm._v("Đến")]),
                     _vm._v(" "),
                     _c(
