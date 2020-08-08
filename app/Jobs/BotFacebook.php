@@ -39,23 +39,23 @@ class BotFacebook implements ShouldQueue
             return;
         }
 
-        // Kiểm tra proxy hoạt động ok không
-        $tryTestProxy = 0;
-        do {
-            if ($tryTestProxy >= 3) {
-                $bot->count_error = config('bot.max_try_time');
-                $bot->error_log = 'Proxy của tài khoản bị die. Tài khoản bị dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
-                $bot->save();
-
-                Log::error("Bot ID " . $bot->id . " Proxy bị die!");
-                return;
-            }
-            $checkProxy = checkProxy($bot->proxy);
-            $tryTestProxy++;
-        } while ($checkProxy == false);
-
-        if (empty($bot->proxy)) {
+        if (empty($bot->proxy) || count(explode(':', $bot->proxy)) !== 2) {
             $bot->proxy = null;
+        } else {
+            // Kiểm tra proxy hoạt động ok không
+            $tryTestProxy = 0;
+            do {
+                if ($tryTestProxy >= 3) {
+                    $bot->count_error = config('bot.max_try_time');
+                    $bot->error_log = 'Proxy của tài khoản bị die. Tài khoản bị dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
+                    $bot->save();
+
+                    Log::error("Bot ID " . $bot->id . " Proxy bị die!");
+                    return;
+                }
+                $checkProxy = checkProxy($bot->proxy);
+                $tryTestProxy++;
+            } while ($checkProxy == false);
         }
 
         $fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
@@ -142,13 +142,6 @@ class BotFacebook implements ShouldQueue
 
         // Nếu bật Auto comment
         if ($bot->comment_on && $bot->next_comment_time <= time()) {
-            // Build nội dung comment
-            $commentContent = RandomComment();
-            $comments = explode(PHP_EOL, $bot->comment_content);
-            if (count($comments) > 0) {
-                $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)]);
-            }
-
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
             if (!empty($bot->comment_sticker_collection)) {
@@ -157,10 +150,23 @@ class BotFacebook implements ShouldQueue
                     $stickerId = $tmpStickerId;
                 }
             }
+
+            // Post ảnh
             $photoId = null;
             if ($stickerId != null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
                 $photoId = uploadImageToFacebook($bot->comment_image_url, $bot->cookie, $fbDtg, $bot->proxy);
             }
+
+            // Build nội dung comment
+            $commentContent = '';
+            $comments = explode(PHP_EOL, $bot->comment_content);
+            if (count($comments) > 0) {
+                $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)]);
+            }
+            if (empty($commentContentTmp)) {
+                $commentContent = RandomComment();
+            }
+
             // Gửi comment
             $comment = commentPostByCookie($bot->cookie, $fbDtg, $postId, $commentContent, $stickerId, $photoId, $bot->proxy);
             if ($comment) {

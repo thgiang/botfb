@@ -128,10 +128,12 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
     if (isset(json_decode($responseData)->payload)) {
         $data = json_decode($responseData);
 
-        file_put_contents('fb.txt', $cookie."\n", FILE_APPEND);
-        file_put_contents('fb.txt', $dtsg."\n", FILE_APPEND);
-        file_put_contents('fb.txt', $postID."\n", FILE_APPEND);
-        file_put_contents('fb.txt', $response."\n\n\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $cookie."\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $dtsg."\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $cookie."\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $postID."\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $commentContent."\n", FILE_APPEND);
+//        file_put_contents('fb.txt', $response."\n\n\n", FILE_APPEND);
         $html = $data->payload->actions[1]->html;
         $re = '/data-commentid="(.*)" data-sigil="comment-body"/s';
         $re2 = '/commentID\":\"(.*)\"}/';
