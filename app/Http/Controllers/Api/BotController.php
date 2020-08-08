@@ -39,8 +39,13 @@ class BotController extends Controller
             $tryTestProxy++;
         } while ($checkProxy == false);
 
+        // Xóa kí tự \r ở dấu xuống dòng
+        if ($request->comment_content) {
+            $request->comment_content = str_replace("\r", '', $request->comment_content);
+        }
 
         $bot = Bot::create($request->all());
+
         return response()->json(['status' => 'success', 'data' => $bot, 'message' => 'Tạo bot thành công, ID: ' . $bot->id]);
     }
 

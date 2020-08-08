@@ -6,7 +6,7 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="far fa-heart"></i>
-                            Cài đặt Bot Tương Tác Facebook
+                            Cài đặt Bot tương tác Facebook
                         </h3>
                     </div>
                     <!-- /.card-header -->
@@ -1312,10 +1312,10 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                 window.open('https://www.facebook.com/stickers/' + this.formData.comment_sticker_collection, "_blank");
             },
             addBot: function () {
-                if (!this.formData.comment_use_sticker) {
+                if (!this.comment_use_sticker) {
                     this.formData.comment_sticker_collection = '';
                 }
-                if (!this.formData.comment_use_image) {
+                if (!this.comment_use_image) {
                     this.formData.comment_image_url = '';
                 }
                 axios.post('/api/bots/new', this.formData)

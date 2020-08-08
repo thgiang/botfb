@@ -159,11 +159,11 @@ class BotFacebook implements ShouldQueue
 
             // Build nội dung comment
             $commentContent = '';
-            $comments = explode(PHP_EOL, $bot->comment_content);
+            $comments = explode("\n", $bot->comment_content);
             if (count($comments) > 0) {
                 $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)]);
             }
-            if (empty($commentContentTmp)) {
+            if (empty($commentContent)) {
                 $commentContent = RandomComment();
             }
 
