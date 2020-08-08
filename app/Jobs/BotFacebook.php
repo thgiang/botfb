@@ -92,7 +92,7 @@ class BotFacebook implements ShouldQueue
                     return;
                 }
             }
-            $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy);
+            $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy, $bot->bot_target);
             if (is_array($postIds) && !empty($postIds)) {
                 $newsFeedIsEmpty = false;
                 $difIds = array_diff($postIds, $allPostReactioned);
