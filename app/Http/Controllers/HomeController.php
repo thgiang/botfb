@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\BotFacebook;
+use App\Models\BotLog;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -25,5 +26,10 @@ class HomeController extends Controller
     public function index()
     {
         return view('home');
+    }
+
+    public function testJob() {
+        $allPostReactioned = BotLog::where('bot_id', 1)->pluck('post_id')->toArray();
+        print_r($allPostReactioned);
     }
 }

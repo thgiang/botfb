@@ -17,7 +17,7 @@ class CreateBotsTable extends Migration
             $table->bigIncrements('id');
             $table->text('cookie');
             $table->string('name', 255)->default('');
-            $table->string('proxy', 191)->default('0:0');
+            $table->string('proxy', 191)->default('0:0')->nullable();
 
             $table->boolean('reaction_on')->default(false);
             $table->integer('reaction_frequency')->default(2);
