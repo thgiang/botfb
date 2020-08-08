@@ -2184,9 +2184,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
 
 
 var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -2204,8 +2201,8 @@ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
         name: '',
         proxy: '',
         bot_target: 'all',
-        like_on: false,
-        like_frequency: 5,
+        reaction_on: false,
+        reaction_frequency: 5,
         reaction_type: 0,
         comment_on: false,
         comment_frequency: 5,
@@ -42290,8 +42287,8 @@ var render = function() {
                           {
                             name: "model",
                             rawName: "v-model",
-                            value: _vm.formData.like_on,
-                            expression: "formData.like_on"
+                            value: _vm.formData.reaction_on,
+                            expression: "formData.reaction_on"
                           }
                         ],
                         staticClass: "form-control",
@@ -42307,7 +42304,7 @@ var render = function() {
                               })
                             _vm.$set(
                               _vm.formData,
-                              "like_on",
+                              "reaction_on",
                               $event.target.multiple
                                 ? $$selectedVal
                                 : $$selectedVal[0]
@@ -42335,8 +42332,8 @@ var render = function() {
                       {
                         name: "show",
                         rawName: "v-show",
-                        value: _vm.formData.like_on,
-                        expression: "formData.like_on"
+                        value: _vm.formData.reaction_on,
+                        expression: "formData.reaction_on"
                       }
                     ]
                   },
@@ -42357,8 +42354,8 @@ var render = function() {
                                 {
                                   name: "model",
                                   rawName: "v-model",
-                                  value: _vm.formData.like_frequency,
-                                  expression: "formData.like_frequency"
+                                  value: _vm.formData.reaction_frequency,
+                                  expression: "formData.reaction_frequency"
                                 }
                               ],
                               staticClass: "form-control",
@@ -42375,7 +42372,7 @@ var render = function() {
                                     })
                                   _vm.$set(
                                     _vm.formData,
-                                    "like_frequency",
+                                    "reaction_frequency",
                                     $event.target.multiple
                                       ? $$selectedVal
                                       : $$selectedVal[0]
@@ -42896,7 +42893,11 @@ var render = function() {
                           }
                         }),
                         _vm._v(" "),
-                        _vm._m(2)
+                        _c("small", { staticClass: "text-muted" }, [
+                          _vm._v(
+                            "Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận\n                                                Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng"
+                          )
+                        ])
                       ])
                     ])
                   ]
@@ -43011,8 +43012,8 @@ var render = function() {
                         }
                       },
                       _vm._l(24, function(hour) {
-                        return _c("option", { domProps: { value: hour } }, [
-                          _vm._v(_vm._s(hour) + " giờ")
+                        return _c("option", { domProps: { value: hour - 1 } }, [
+                          _vm._v(_vm._s(hour - 1) + " giờ")
                         ])
                       }),
                       0
@@ -43055,8 +43056,8 @@ var render = function() {
                         }
                       },
                       _vm._l(24, function(hour) {
-                        return _c("option", { domProps: { value: hour } }, [
-                          _vm._v(_vm._s(hour) + " giờ")
+                        return _c("option", { domProps: { value: hour - 1 } }, [
+                          _vm._v(_vm._s(hour - 1) + " giờ")
                         ])
                       }),
                       0
@@ -43114,24 +43115,6 @@ var staticRenderFns = [
       _vm._v(
         " nếu muốn random\n                                                ảnh."
       )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("small", { staticClass: "text-muted" }, [
-      _vm._v("Lệnh: "),
-      _c("b", [_vm._v("{icon}")]),
-      _vm._v(" = random emoij, "),
-      _c("b", [_vm._v("{name}")]),
-      _vm._v(
-        "\n                                                =\n                                                tên facebook chủ post,\n                                                "
-      ),
-      _c("b", [_vm._v("{time}")]),
-      _vm._v(" = lấy thời gian hiện tại, "),
-      _c("b", [_vm._v("{enter}")]),
-      _vm._v(" = xuống\n                                                dòng.")
     ])
   }
 ]
@@ -55460,14 +55443,15 @@ __webpack_require__.r(__webpack_exports__);
 /*!*******************************************************!*\
   !*** ./resources/js/components/bots/AddComponent.vue ***!
   \*******************************************************/
-/*! exports provided: default */
+/*! no static exports found */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AddComponent_vue_vue_type_template_id_36012ce4___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AddComponent.vue?vue&type=template&id=36012ce4& */ "./resources/js/components/bots/AddComponent.vue?vue&type=template&id=36012ce4&");
 /* harmony import */ var _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AddComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/bots/AddComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
 
@@ -55497,7 +55481,7 @@ component.options.__file = "resources/js/components/bots/AddComponent.vue"
 /*!********************************************************************************!*\
   !*** ./resources/js/components/bots/AddComponent.vue?vue&type=script&lang=js& ***!
   \********************************************************************************/
-/*! exports provided: default */
+/*! no static exports found */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

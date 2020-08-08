@@ -184,9 +184,9 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
             $listIDs = array_values(array_unique($matches[2]));
         }
     } elseif ($postOwnerType == 'friend_and_fanpage') {
-        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp;/", $response, $matches);
-        if (isset($matches[2])) {
-            $listIDs = array_values(array_unique($matches[2]));
+        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp;refid/", $response, $matches);
+        if (isset($matches[1])) {
+            $listIDs = array_values(array_unique($matches[1]));
         }
     } else {
         preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);

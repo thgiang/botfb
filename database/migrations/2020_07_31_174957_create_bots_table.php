@@ -19,8 +19,8 @@ class CreateBotsTable extends Migration
             $table->string('name', 255)->default('');
             $table->string('proxy', 191)->default('0:0');
 
-            $table->boolean('like_on')->default(false);
-            $table->integer('like_frequency')->default(2);
+            $table->boolean('reaction_on')->default(false);
+            $table->integer('reaction_frequency')->default(2);
             $table->string('bot_target', 191)->default('all');
             $table->integer('reaction_type')->default(1);
 
@@ -36,8 +36,9 @@ class CreateBotsTable extends Migration
             $table->text('black_list')->nullable();
             $table->text('white_list')->nullable();
 
-            $table->boolean('is_valid')->default(true);
-            $table->integer('next_run_time')->default(0);
+            $table->integer('count_error')->default(0);
+            $table->integer('next_reaction_time')->default(0);
+            $table->integer('next_comment_time')->default(0);
             $table->text('error_log')->nullable();
             $table->timestamps();
         });
