@@ -164,10 +164,10 @@ class BotFacebook implements ShouldQueue
 
             // Post ảnh
             $photoId = null;
-            if ($stickerId != null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
+            if ($stickerId == null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
                 $photoId = uploadImageToFacebook($bot->comment_image_url, $bot->cookie, $fbDtg, $bot->proxy);
             }
-
+			
             // Build nội dung comment
             $commentContent = '';
             $comments = explode("\n", $bot->comment_content);

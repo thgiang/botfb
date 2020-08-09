@@ -325,7 +325,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null)
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => array('photo' => new CURLFile(getcwd() . "\\" . $fileName)),
+        CURLOPT_POSTFIELDS => array('photo' => new CURLFile(getcwd() . DIRECTORY_SEPARATOR  . $fileName)),
         CURLOPT_HTTPHEADER => array(
             "authority: upload.facebook.com",
             "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",

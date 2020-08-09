@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bot;
+use App\Models\BotLog;
 use App\Models\WhiteListIds;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -80,5 +81,9 @@ class BotController extends Controller
     {
         Bot::where('id', $request->id)->delete();
         return "Đã xóa bot ID " . $request->id;
+    }
+
+    public function logs() {
+        return BotLog::orderBy('updated_at', 'DESC')->paginate(15);
     }
 }
