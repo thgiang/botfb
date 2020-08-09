@@ -17,7 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/bots/new', 'Api\BotController@new');
+Route::post('/bots/save', 'Api\BotController@save');
 Route::get('/bots', 'Api\BotController@index');
 Route::get('/bots/logs', 'Api\BotController@logs');
 Route::get('/bots/delete', 'Api\BotController@delete');

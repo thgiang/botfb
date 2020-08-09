@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bot;
+use App\Models\WhiteListIds;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class BotController extends Controller
 {
-    public function new(Request $request)
+    public function save(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'cookie' => 'required|unique:bots,cookie',
@@ -44,9 +45,30 @@ class BotController extends Controller
             $request->comment_content = str_replace("\r", '', $request->comment_content);
         }
 
-        $bot = Bot::create($request->all());
+        // Lưu bot
+        if (!$request->bot_id) {
+            $bot = Bot::create($request->all());
+        } else {
+            $bot = Bot::where('bot_id', $request->bot_id)->update($request->all());
+        }
 
-        return response()->json(['status' => 'success', 'data' => $bot, 'message' => 'Tạo bot thành công, ID: ' . $bot->id]);
+        // Lưu danh sách white list nếu có
+        if ($request->white_list) {
+            $request->white_list = str_replace("\r", '', $request->white_list);
+            if ($request->bot_id) {
+                // Nếu update bot đã có từ trc thì xóa hết white list cũ đi để thêm lại
+                WhiteListIds::where('bot_id', $request->bot_id)->detele();
+            }
+            $fbIds = explode("\n", $request->white_list);
+            foreach ($fbIds as $fbId) {
+                $newWhiteList = new WhiteListIds();
+                $newWhiteList->bot_id = $bot->id;
+                $newWhiteList->fb_id = $fbId;
+                $newWhiteList->save();
+            }
+        }
+
+        return response()->json(['status' => 'success', 'data' => $bot, 'message' => 'Luwu bot thành công, ID: ' . $bot->id]);
     }
 
     public function index(Request $request)

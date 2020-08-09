@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\CreateJobs;
 
 use App\Jobs\BotFacebook;
+use App\Jobs\CrawlNewPost;
 use App\Models\Bot;
+use App\Models\WhiteListIds;
 use Illuminate\Console\Command;
 
-class WakeupBots extends Command
+class BotByWhiteList extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'wakeup-bots';
+    protected $signature = 'create-jobs:bot-by-white-list';
 
     /**
      * The console command description.
@@ -39,11 +41,13 @@ class WakeupBots extends Command
      */
     public function handle()
     {
-        Bot::where('count_error', '<', config('bot.max_try_time'))->where(function ($query) {
-            $query->where('next_reaction_time', '<=', time())->orWhere('next_comment_time', '<=', time());
-        })->chunkById(100, function ($bots) {
-            foreach ($bots as $bot) {
-                BotFacebook::dispatch($bot->id);
+        $fbIds = array();
+        WhiteListIds::chunkById(100, function ($whiteLists) use ($fbIds) {
+            foreach ($whiteLists as $whiteList) {
+                if (!in_array($whiteList->fb_id, $fbIds)) {
+                    $fbIds[] = $whiteList->fb_id;
+                    CrawlNewPost::dispatch($whiteList->fb_id);
+                }
             }
         });
     }

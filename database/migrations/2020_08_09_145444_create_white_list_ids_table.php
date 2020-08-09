@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSystemTokenSTable extends Migration
+class CreateWhiteListIdsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class CreateSystemTokenSTable extends Migration
      */
     public function up()
     {
-        Schema::create('system_tokens', function (Blueprint $table) {
+        Schema::create('white_list_ids', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->text('token');
-            $table->text('proxy')->nullable();
-            $table->boolean('is_live')->default(true);
+            $table->bigInteger('bot_id');
+            $table->string('fb_id');
             $table->timestamps();
+
+            $table->index('bot_id', 'IDX_BOT_ID');
+            $table->index('fb_id', 'IDX_FB_ID');
         });
     }
 
@@ -29,6 +31,6 @@ class CreateSystemTokenSTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('system_tokens');
+        Schema::dropIfExists('white_list_ids');
     }
 }

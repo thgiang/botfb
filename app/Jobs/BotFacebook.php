@@ -16,15 +16,18 @@ class BotFacebook implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private $botId;
+    private $postId;
 
     /**
-     * Create a new job instance.
+     * Create a new job instance. Nếu truyền $postId thì bot sẽ tương tác ngay với post đó, ko cần quan tâm thời gian hẹn giờ
      *
-     * @return void
+     * @param int $botId
+     * @param string $postId
      */
-    public function __construct($botId)
+    public function __construct($botId, $postId = '')
     {
         $this->botId = $botId;
+        $this->postId = $postId;
     }
 
     /**
@@ -69,38 +72,46 @@ class BotFacebook implements ShouldQueue
         }
 
         // Chọn $postId theo quy tắc đã setup + kiểm tra xem $postId đã từng tồn tại trong DB chưa
-        $tryFindPost = 0;
+
         $allPostReactioned = BotLog::where('bot_id', 1)->pluck('post_id')->toArray();
-        $postId = '';
-        $newsFeedIsEmpty = true;
-        do {
-            $tryFindPost++;
-            if ($tryFindPost > 3) {
-                if ($newsFeedIsEmpty) {
-                    $bot->error_log = 'Đọc news feed ko có bài viết nào';
-                    $bot->count_error = $bot->count_error + 1;
-                    if ($bot->count_error >= config('bot.max_try_time')) {
-                        $bot->error_log = 'Đọc news feed ko có bài viết nào. BOT này đã bị lỗi quá '.config('bot.max_try_time').' lần nên dừng luôn.';
+        $postId = $this->postId;
+        if ($postId == '' || in_array($postId, $allPostReactioned)) {
+            $tryFindPost = 0;
+            $newsFeedIsEmpty = true;
+            do {
+                $tryFindPost++;
+                if ($tryFindPost > 3) {
+                    if ($newsFeedIsEmpty) {
+                        $bot->error_log = 'Đọc news feed ko có bài viết nào';
+                        $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                        $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                        /* Nếu muốn bot dừng hẳn ko chạy lại nữa thì dùng đoạn code này
+                        $bot->count_error = $bot->count_error + 1;
+                        if ($bot->count_error >= config('bot.max_try_time')) {
+                            $bot->error_log = 'Đọc news feed ko có bài viết nào. BOT này đã bị lỗi quá '.config('bot.max_try_time').' lần nên dừng luôn.';
+                        }
+                        */
+                        $bot->save();
+                        return;
+                    } else {
+                        $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau '.config('bot.try_news_feed_after').' phút';
+                        $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                        $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                        $bot->save();
+                        return;
                     }
-                    $bot->save();
-                    return;
-                } else {
-                    $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau '.config('bot.try_news_feed_after').' phút';
-                    $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
-                    $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
-                    $bot->save();
-                    return;
                 }
-            }
-            $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy, $bot->bot_target);
-            if (is_array($postIds) && !empty($postIds)) {
-                $newsFeedIsEmpty = false;
-                $difIds = array_diff($postIds, $allPostReactioned);
-                if (count($difIds) > 0) {
-                    $postId = $difIds[rand(0, count($difIds) - 1)];
+                $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy, $bot->bot_target);
+                if (is_array($postIds) && !empty($postIds)) {
+                    $newsFeedIsEmpty = false;
+                    $difIds = array_diff($postIds, $allPostReactioned);
+                    if (count($difIds) > 0) {
+                        $postId = $difIds[rand(0, count($difIds) - 1)];
+                    }
                 }
-            }
-        } while ( $postId == '' || in_array($postId, $allPostReactioned));
+            } while ( $postId == '' || in_array($postId, $allPostReactioned));
+        }
+
 
         // Lấy thời gian bắt đầu và kết thúc của bot
         if ($bot->start_time > $bot->end_time) {
@@ -113,7 +124,7 @@ class BotFacebook implements ShouldQueue
         }
 
         // Nếu bật Reaction
-        if ($bot->reaction_on && $bot->next_reaction_time <= time()) {
+        if ($bot->reaction_on && ($bot->next_reaction_time <= time() || $this->postId != '')) {
             // Chọn theo cảm xúc khách setup, nếu khách setup số linh tinh thì chọn random 1 trong các cảm xúc
             $reactions = array(1, 2, 3, 4, 6, 8, 16);
             if (in_array($bot->reaction_type, $reactions)) {
@@ -141,7 +152,7 @@ class BotFacebook implements ShouldQueue
         }
 
         // Nếu bật Auto comment
-        if ($bot->comment_on && $bot->next_comment_time <= time()) {
+        if ($bot->comment_on && ($bot->next_comment_time <= time() || $this->postId != '')) {
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
             if (!empty($bot->comment_sticker_collection)) {

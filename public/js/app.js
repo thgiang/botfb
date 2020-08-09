@@ -3254,15 +3254,15 @@ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
       window.open('https://www.facebook.com/stickers/' + this.formData.comment_sticker_collection, "_blank");
     },
     addBot: function addBot() {
-      if (!this.formData.comment_use_sticker) {
+      if (!this.comment_use_sticker) {
         this.formData.comment_sticker_collection = '';
       }
 
-      if (!this.formData.comment_use_image) {
+      if (!this.comment_use_image) {
         this.formData.comment_image_url = '';
       }
 
-      axios.post('/api/bots/new', this.formData).then(function (response) {
+      axios.post('/api/bots/save', this.formData).then(function (response) {
         if (response.data.status === "error") {
           sweetalert2__WEBPACK_IMPORTED_MODULE_0___default.a.fire({
             icon: response.data.status,
@@ -43100,7 +43100,7 @@ var staticRenderFns = [
       _c("h3", { staticClass: "card-title" }, [
         _c("i", { staticClass: "far fa-heart" }),
         _vm._v(
-          "\n                            Cài đặt Bot Tương Tác Facebook\n                        "
+          "\n                            Cài đặt Bot tương tác Facebook\n                        "
         )
       ])
     ])
@@ -55443,15 +55443,14 @@ __webpack_require__.r(__webpack_exports__);
 /*!*******************************************************!*\
   !*** ./resources/js/components/bots/AddComponent.vue ***!
   \*******************************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AddComponent_vue_vue_type_template_id_36012ce4___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AddComponent.vue?vue&type=template&id=36012ce4& */ "./resources/js/components/bots/AddComponent.vue?vue&type=template&id=36012ce4&");
 /* harmony import */ var _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AddComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/bots/AddComponent.vue?vue&type=script&lang=js&");
-/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _AddComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
 
@@ -55481,7 +55480,7 @@ component.options.__file = "resources/js/components/bots/AddComponent.vue"
 /*!********************************************************************************!*\
   !*** ./resources/js/components/bots/AddComponent.vue?vue&type=script&lang=js& ***!
   \********************************************************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -55527,8 +55526,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/codedao.jas.plus/public_html/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/codedao.jas.plus/public_html/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\xampp\htdocs\botfb\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\botfb\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

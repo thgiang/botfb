@@ -469,5 +469,22 @@ function RandomComment()
         "Thằng bờm thì thích nắm xôi, còn em thích nắm tay tôi chứ gì?",
         "Tim em đã bật đèn xanh. Cớ sao anh mãi đạp phanh thế này?"
     );
-    return $emotion . " " . $comments[rand(0, count($comments) - 1)];
+    return $comments[rand(0, count($comments) - 1)] . " " . $emotion;
+}
+
+function FacebookGet($path, $queries, $access_token, $proxy = null)
+{
+    // TODO: Dùng proxy để request
+    $queryString = "";
+    foreach ($queries as $key => $value) {
+        $queryString .= "&" . $key . "=" . $value;
+    }
+
+    $dataString = @file_get_contents('https://graph.facebook.com/v8.0/' . $path . '?access_token=' . $access_token . $queryString);
+
+    if (!$dataString) {
+        return json_encode((object)array());
+    } else {
+        return json_decode($dataString);
+    }
 }

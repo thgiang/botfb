@@ -19,12 +19,13 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param Schedule $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-         $schedule->command('wakeup-bots')->everyMinute();
+        $schedule->command('create-jobs:bot-by-time')->everyMinute();
+        $schedule->command('create-jobs:bot-by-white-list')->everyMinute();
     }
 
     /**
@@ -34,8 +35,8 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
-
+        $this->load(__DIR__ . '/Commands');
+        $this->load(__DIR__ . '/Commands/CreateJobs');
         require base_path('routes/console.php');
     }
 }

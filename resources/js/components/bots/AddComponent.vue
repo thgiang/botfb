@@ -1318,7 +1318,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                 if (!this.comment_use_image) {
                     this.formData.comment_image_url = '';
                 }
-                axios.post('/api/bots/new', this.formData)
+                axios.post('/api/bots/save', this.formData)
                     .then(function (response) {
                         if (response.data.status === "error") {
                             Swal.fire({
