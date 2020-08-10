@@ -43,7 +43,10 @@ class BotByTime extends Command
             $query->where('next_reaction_time', '<=', time())->orWhere('next_comment_time', '<=', time());
         })->chunkById(100, function ($bots) {
             foreach ($bots as $bot) {
-                BotFacebook::dispatch($bot->id);
+                // Nếu là whitelist thì đã có job BotByWhiteList xử lý nên ko xử lý ở đây nữa.
+                if ($bot->bot_target != 'whitelist') {
+                    BotFacebook::dispatch($bot->id);
+                }
             }
         });
     }

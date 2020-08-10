@@ -38,7 +38,9 @@ class CrawlNewPost implements ShouldQueue
     {
         $token = SystemToken::where('is_live', true)->inRandomOrder()->first();
         if (!$token) {
+            // TODO: Bắn thông báo lên telegram
             Log::error('LỖI TO: KHÔNG CÒN TOKEN ĐỂ CRAWL BÀI VIẾT');
+            return;
         }
 
         // Lấy thông tin token
@@ -49,7 +51,7 @@ class CrawlNewPost implements ShouldQueue
         }
 
         // Token OK, lấy 2 bài gần nhất
-        $feed = FacebookGet($this->fb_id . '/feed', array('limit', config('bot.white_list_feed_limit')), $token->token, $token->proxy);
+        $feed = FacebookGet($this->fb_id . '/feed', array('limit' => config('bot.white_list_feed_limit')), $token->token, $token->proxy);
         if (empty($feed) || empty($feed->data)) {
             return;
         }

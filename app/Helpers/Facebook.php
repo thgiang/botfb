@@ -227,11 +227,11 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
 
     // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
     if (count($listIDs) == 0) {
-        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
-        if (isset($nextCusor[0])) {
-            $nextCusor = "https://mbasic.facebook.com" . rtrim($nextCusor[0], '"');
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
+        if (isset($nextCursor[0])) {
+            $nextCursor = "https://mbasic.facebook.com" . rtrim($nextCursor[0], '"');
         }
-        getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor);
+        getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor);
     }
 
     return $listIDs;
@@ -337,11 +337,11 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
 
     // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
     if(count($listIDs) == 0 && $tryCount <= 5) {
-        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
-        if (isset($nextCusor[0])) {
-            $nextCusor = "https://mbasic.facebook.com/".rtrim($nextCusor[0], '"');
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
+        if (isset($nextCursor[0])) {
+            $nextCursor = "https://mbasic.facebook.com/".rtrim($nextCursor[0], '"');
             $nextTry = $tryCount + 1;
-            getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor, $nextTry);
+            getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor, $nextTry);
         }
     }
 
@@ -630,12 +630,14 @@ function RandomComment()
 
 function FacebookGet($path, $queries, $access_token, $proxy = null)
 {
+    if (empty($proxy)) {
+        $proxy = null;
+    }
     $queryString = "";
     foreach ($queries as $key => $value) {
         $queryString .= "&" . $key . "=" . $value;
     }
-    $urlToRequest = 'https://graph.facebook.com/' . $path . '?access_token=' . $access_token . $queryString;
-
+    $urlToRequest = 'https://graph.facebook.com/v2.4/' . $path . '?access_token=' . $access_token . $queryString;
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
