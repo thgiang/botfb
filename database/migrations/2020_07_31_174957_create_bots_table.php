@@ -27,7 +27,7 @@ class CreateBotsTable extends Migration
             $table->boolean('comment_on')->default(false);
             $table->integer('comment_frequency')->default(2);
             $table->text('comment_content')->nullable();
-            $table->string('comment_image_url', 500)->nullable();
+            $table->text('comment_image_url')->nullable();
             $table->string('comment_sticker_collection', 191)->nullable();
 
             $table->integer('start_time')->default(8);

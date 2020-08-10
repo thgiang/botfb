@@ -39,10 +39,11 @@
                                     <label class="col-sm-2 col-form-label">Tương tác với</label>
                                     <div class="col-sm-10">
                                         <select class="form-control" v-model="formData.bot_target">
-                                            <option value="friend_and_fanpage">Chỉ bài viết từ bạn bè và Fanpage
-                                            </option>
-                                            <option value="group">Chỉ bài viết từ Group</option>
                                             <option value="all">Tất cả bài viết trên Newfeed</option>
+                                            <option value="friend">Chỉ bài viết từ bạn bè</option>
+                                            <option value="fanpage">Chỉ bài viết từ Fanpage</option>
+                                            <option value="group">Chỉ bài viết từ Group</option>
+                                            <option value="whitelist">Chỉ bài viết từ Whitelist</option>
                                         </select>
                                     </div>
                                 </div>
@@ -132,11 +133,11 @@
                                     <div class="form-group row" v-if="comment_use_image">
                                         <label class="col-sm-2 col-form-label">Ảnh để comment</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control"
-                                                   placeholder="Nhập url hình ảnh muốn comment (ví dụ: https://google.com/anhdep.jpg )"
-                                                   v-model="formData.comment_image_url">
-                                            <small class="text-muted">Nhập: <b>{ngaunhien}</b> nếu muốn random
-                                                ảnh.</small>
+                                            <textarea class="form-control" v-model="formData.comment_image_url" rows="3"
+                                                      placeholder="Mỗi url ảnh một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận">
+                                            </textarea>
+                                            <!--                                            <small class="text-muted">Nhập: <b>{ngaunhien}</b> nếu muốn random-->
+                                            <!--                                                ảnh.</small>-->
                                         </div>
                                     </div>
 
@@ -164,8 +165,11 @@
 					<textarea class="form-control" v-model="formData.comment_content" rows="3"
                               placeholder="Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
 Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng"></textarea>
-                                            <small class="text-muted">Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu nhiên để bình luận
-                                                Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} = xuống dòng</small>
+                                            <small class="text-muted">Mỗi nội dung một dòng, hệ thống sẽ tự lấy ngẫu
+                                                nhiên để bình luận
+                                                Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay}
+                                                {thang} {nam} {gio} {phut} = ngày, tháng, năm, giờ, phút | {enter} =
+                                                xuống dòng</small>
                                         </div>
                                     </div>
                                 </div>

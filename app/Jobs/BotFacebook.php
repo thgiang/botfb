@@ -156,7 +156,7 @@ class BotFacebook implements ShouldQueue
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
             if (!empty($bot->comment_sticker_collection)) {
-                $tmpStickerId = randomStickerOfCollection($bot->cookie, $fbDtg, $bot->comment_sticker_collection);
+                $tmpStickerId = randomStickerOfCollection($bot->cookie, $fbDtg, $bot->comment_sticker_collection, $bot->proxy);
                 if ($tmpStickerId !== false) {
                     $stickerId = $tmpStickerId;
                 }
@@ -165,7 +165,13 @@ class BotFacebook implements ShouldQueue
             // Post ảnh
             $photoId = null;
             if ($stickerId == null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
-                $photoId = uploadImageToFacebook($bot->comment_image_url, $bot->cookie, $fbDtg, $bot->proxy);
+                $photoUrls = explode("\n", $bot->comment_image_url);
+                // Set mặc định 1 cái ảnh
+                $commentPhoto = "https://www.nicepng.com/png/detail/47-476266_free-png-3d-facebook-logo-png-icon-png.png";
+                if (count($photoUrls) > 0) {
+                    $commentPhoto = $photoUrls[rand(0, count($photoUrls) - 1)];
+                }
+                $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $bot->proxy);
             }
 
             // Build nội dung comment

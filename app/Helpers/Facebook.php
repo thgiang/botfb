@@ -134,17 +134,20 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
 //        file_put_contents('fb.txt', $postID."\n", FILE_APPEND);
 //        file_put_contents('fb.txt', $commentContent."\n", FILE_APPEND);
 //        file_put_contents('fb.txt', $response."\n\n\n", FILE_APPEND);
-        $html = $data->payload->actions[1]->html;
-        $re = '/data-commentid="(.*)" data-sigil="comment-body"/s';
-        $re2 = '/commentID\":\"(.*)\"}/';
-        preg_match($re, $html, $matches);
-        preg_match($re2, $html, $matches2);
-        if (count($matches) > 1) {
-            return $matches[1];
+        if (isset($data->payload->actions[1]->html)) {
+            $html = $data->payload->actions[1]->html;
+            $re = '/data-commentid="(.*)" data-sigil="comment-body"/s';
+            $re2 = '/commentID\":\"(.*)\"}/';
+            preg_match($re, $html, $matches);
+            preg_match($re2, $html, $matches2);
+            if (count($matches) > 1) {
+                return $matches[1];
+            }
+            if (count($matches2) > 1) {
+                return $matches2[1];
+            }
         }
-        if (count($matches2) > 1) {
-            return $matches2[1];
-        }
+
         return false;
     } else {
         return false;
@@ -181,20 +184,39 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
     ));
 
     $response = curl_exec($curl);
-
     curl_close($curl);
 
-    $listIDs = null;
+    $listIDs = [];
 
     if ($postOwnerType == 'group') {
         preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
         if (isset($matches[2])) {
             $listIDs = array_values(array_unique($matches[2]));
         }
-    } elseif ($postOwnerType == 'friend_and_fanpage') {
-        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp;refid/", $response, $matches);
-        if (isset($matches[1])) {
-            $listIDs = array_values(array_unique($matches[1]));
+    } elseif ($postOwnerType == 'friend' || $postOwnerType == 'fanpage') {
+        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp/", $response, $matches);
+        if (isset($matches[2])) {
+            $listPostOwnerIDs = array_values(array_unique($matches[2]));
+            $listPostIDs = array_values(array_unique($matches[1]));
+
+            $listPostIDsOfFanpage = [];
+            $listPostIDsOfUser = [];
+
+            foreach ($listPostOwnerIDs as $index => $postOwnerID) {
+                $postIDOfThisOwner = $listPostIDs[$index];
+
+                if (preg_match("/%3Apage_id\." . $postOwnerID . "%3A/", $response)) {
+                    array_push($listPostIDsOfFanpage, $postIDOfThisOwner);
+                } else {
+                    array_push($listPostIDsOfUser, $postIDOfThisOwner);
+                }
+            }
+
+            if ($postOwnerType == 'friend') {
+                $listIDs = array_values(array_unique($listPostIDsOfUser));
+            } else {
+                $listIDs = array_values(array_unique($listPostIDsOfFanpage));
+            }
         }
     } else {
         preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);
@@ -203,19 +225,129 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
         }
     }
 
-    // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
+    // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
     if (count($listIDs) == 0) {
-        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
-        if (isset($nextCursor[0])) {
-            $nextCursor = "https://mbasic.facebook.com" . rtrim($nextCursor[0], '"');
-            return getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor);
-        } else {
-            return false;
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
+        if (isset($nextCusor[0])) {
+            $nextCusor = "https://mbasic.facebook.com" . rtrim($nextCusor[0], '"');
+        }
+        getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor);
+    }
+
+    return $listIDs;
+}
+
+
+function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0) {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $urlToCrawl,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: m.facebook.com",
+            "cache-control: max-age=0",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: same-origin",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: ".$cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+    curl_close($curl);
+    // echo $response;
+    $listIDs = [];
+
+    if ($postOwnerType == 'group') {
+        preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
+
+        if (isset($matches[2])) {
+            $listPostIDs = array_values(array_unique($matches[2]));
+            foreach ($listPostIDs as $key => $postID) {
+                preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
+                if (isset($postOwnerID[1])) {
+                    $postOwnerID = $postOwnerID[1];
+                    array_push($listIDs, (object)[
+                        "post_id" => $postID,
+                        "owner_id" => $postOwnerID
+                    ]);
+                }
+            }
+        }
+    } elseif($postOwnerType == 'friend' || $postOwnerType == 'fanpage') {
+        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp/", $response, $matches);
+        if (isset($matches[2])) {
+            $listPostOwnerIDs = array_values(array_unique($matches[2]));
+            $listPostIDs = array_values(array_unique($matches[1]));
+
+            $listPostIDsOfFanpage = [];
+            $listPostIDsOfUser = [];
+
+            foreach ($listPostOwnerIDs as $index => $postOwnerID) {
+                $postIDOfThisOwner = $listPostIDs[$index];
+
+                if (preg_match("/%3Apage_id\.".$postOwnerID."%3A/", $response)) {
+                    array_push($listPostIDsOfFanpage, (object)[
+                        "post_id" => $postIDOfThisOwner,
+                        "owner_id" => $postOwnerID
+                    ]);
+                } else {
+                    array_push($listPostIDsOfUser, (object)[
+                        "post_id" => $postIDOfThisOwner,
+                        "owner_id" => $postOwnerID
+                    ]);
+                }
+            }
+
+            if($postOwnerType == 'friend') {
+                $listIDs = $listPostIDsOfUser;
+            } else {
+                $listIDs = $listPostIDsOfFanpage;
+            }
+        }
+    } else {
+        preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);
+        if (isset($matches[1])) {
+            $listPostIDs = array_values(array_unique($matches[1]));
+            foreach ($listPostIDs as $key => $postID) {
+                preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
+                if (isset($postOwnerID[1])) {
+                    $postOwnerID = $postOwnerID[1];
+                    array_push($listIDs, (object)[
+                        "post_id" => $postID,
+                        "owner_id" => $postOwnerID
+                    ]);
+                }
+            }
+        }
+    }
+
+    // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
+    if(count($listIDs) == 0 && $tryCount <= 5) {
+        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCusor);
+        if (isset($nextCusor[0])) {
+            $nextCusor = "https://mbasic.facebook.com/".rtrim($nextCusor[0], '"');
+            $nextTry = $tryCount + 1;
+            getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCusor, $nextTry);
         }
     }
 
     return $listIDs;
 }
+
 
 function getUserInfoFromUID($uid, $proxy, $token = "EAABwzLixnjYBANPZCGhCAfydyUe912L1ZCci3qKvrai44gxeVHTb7FNWZB8JZB6knEUfyMVKBhxUQb7YJ2PqHZCjGL62ZAE3kZBdSSfNRDrSlWevG5CgpCRq483yvG5ETKXl7ZB1VwixMrmIxEc1Ctox9OET6l3ZBZBMmzLhZBoAZAFZBPL3a6BVhrkD1")
 {
@@ -271,10 +403,17 @@ function getPostOwner($cookie, $proxy = null, $postID)
 
     $response = curl_exec($curl);
     curl_close($curl);
+
+    preg_match("#__tn__=C-R\">(.*?)</a></strong#", $response, $postOwner);
+    if (isset($postOwner[0])) {
+        return $postOwner[1];
+    }
+
     preg_match("#title>(.*?) - (.*?) \| Facebook#", $response, $postOwner);
     if (isset($postOwner[0])) {
         return $postOwner[1];
     }
+
     return "Bạn";
 }
 
@@ -310,7 +449,7 @@ function checkProxy($proxy)
     ));
     $response = curl_exec($curl);
 
-    if ($response != $_SERVER['SERVER_ADDR']) {
+    if ($response != "139.180.156.247") {
         return $response;
     }
 
@@ -370,12 +509,13 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null)
     }
 }
 
-function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID)
+function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID, $proxy = null)
 {
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
         CURLOPT_URL => "https://m.facebook.com/stickers/" . $stickerColletionID . "/images/",
+        CURLOPT_PROXY => $proxy,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
         CURLOPT_MAXREDIRS => 10,
@@ -490,13 +630,29 @@ function RandomComment()
 
 function FacebookGet($path, $queries, $access_token, $proxy = null)
 {
-    // TODO: Dùng proxy để request
     $queryString = "";
     foreach ($queries as $key => $value) {
         $queryString .= "&" . $key . "=" . $value;
     }
+    $urlToRequest = 'https://graph.facebook.com/' . $path . '?access_token=' . $access_token . $queryString;
 
-    $dataString = @file_get_contents('https://graph.facebook.com/v8.0/' . $path . '?access_token=' . $access_token . $queryString);
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $urlToRequest,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+    ));
+
+    $dataString = curl_exec($curl);
+
+    curl_close($curl);
 
     if (!$dataString) {
         return json_encode((object)array());
