@@ -240,7 +240,7 @@ function getUserInfoFromUID($uid, $proxy, $token = "EAABwzLixnjYBANPZCGhCAfydyUe
 }
 
 
-function getPostOwner($cookie, $proxy = null, $postID = '')
+function getPostOwner($cookie, $proxy = null, $postID)
 {
     $curl = curl_init();
 
@@ -270,13 +270,12 @@ function getPostOwner($cookie, $proxy = null, $postID = '')
     ));
 
     $response = curl_exec($curl);
-
     curl_close($curl);
-    preg_match("#bh bi bj bk\"><span><strong><a href=\"\/(.*?)\/\?refid=52&amp;__tn__=C-R\">(.*?)\<\/a#", $response, $postOwner);
-    if (isset($postOwner[1])) {
-        return $postOwner;
+    preg_match("#title>(.*?) - (.*?) \| Facebook#", $response, $postOwner);
+    if (isset($postOwner[0])) {
+        return $postOwner[1];
     }
-    return [];
+    return "Bạn";
 }
 
 
@@ -292,13 +291,30 @@ function getUserInfoFromCookie($cookie, $proxy = null, $token = "EAABwzLixnjYBAN
 
 function checkProxy($proxy)
 {
-    $proxyHost = explode(":", $proxy)[0];
-    $proxyPort = explode(":", $proxy)[1];
-    if ($con = @fsockopen($proxyHost, $proxyPort, $errno, $errstr, 10)) {
-        return @file_get_contents("http://jas.plus/ip");
-    } else {
+    $proxyParts = explode(":", $proxy);
+    if (count($proxyParts) != 2) {
         return false;
     }
+
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://jas.plus/ip",
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+    ));
+    $response = curl_exec($curl);
+
+    if ($response != $_SERVER['SERVER_ADDR']) {
+        return $response;
+    }
+
+    return false;
 }
 
 // Example: uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $cookie, $dtsg)
@@ -325,7 +341,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null)
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => array('photo' => new CURLFile(getcwd() . DIRECTORY_SEPARATOR  . $fileName)),
+        CURLOPT_POSTFIELDS => array('photo' => new CURLFile(getcwd() . "/" . $fileName)),
         CURLOPT_HTTPHEADER => array(
             "authority: upload.facebook.com",
             "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",

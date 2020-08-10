@@ -28,6 +28,7 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-    $bot = Bot::first();
-    print_r(BotFacebook::dispatch($bot->id));
+//    $bot = Bot::first();
+//    print_r(BotFacebook::dispatch($bot->id));
+    echo $_SERVER['SERVER_ADDR'];
 });

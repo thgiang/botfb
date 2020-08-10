@@ -73,7 +73,7 @@ class BotFacebook implements ShouldQueue
 
         // Chọn $postId theo quy tắc đã setup + kiểm tra xem $postId đã từng tồn tại trong DB chưa
 
-        $allPostReactioned = BotLog::where('bot_id', 1)->pluck('post_id')->toArray();
+        $allPostReactioned = BotLog::where('bot_id', $bot->id)->pluck('post_id')->toArray();
         $postId = $this->postId;
         if ($postId == '' || in_array($postId, $allPostReactioned)) {
             $tryFindPost = 0;
@@ -94,7 +94,7 @@ class BotFacebook implements ShouldQueue
                         $bot->save();
                         return;
                     } else {
-                        $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau '.config('bot.try_news_feed_after').' phút';
+                        $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút';
                         $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
                         $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
                         $bot->save();
@@ -109,7 +109,7 @@ class BotFacebook implements ShouldQueue
                         $postId = $difIds[rand(0, count($difIds) - 1)];
                     }
                 }
-            } while ( $postId == '' || in_array($postId, $allPostReactioned));
+            } while ($postId == '' || in_array($postId, $allPostReactioned));
         }
 
 
@@ -167,7 +167,7 @@ class BotFacebook implements ShouldQueue
             if ($stickerId == null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
                 $photoId = uploadImageToFacebook($bot->comment_image_url, $bot->cookie, $fbDtg, $bot->proxy);
             }
-			
+
             // Build nội dung comment
             $commentContent = '';
             $comments = explode("\n", $bot->comment_content);
@@ -176,6 +176,9 @@ class BotFacebook implements ShouldQueue
             }
             if (empty($commentContent)) {
                 $commentContent = RandomComment();
+            }
+            if (preg_match("/{name}/", $commentContent)) {
+                $commentContent = str_replace("{name}", getPostOwner($bot->cookie, $bot->proxy, $postId), $commentContent);
             }
 
             // Gửi comment

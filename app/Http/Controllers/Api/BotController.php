@@ -69,7 +69,7 @@ class BotController extends Controller
             }
         }
 
-        return response()->json(['status' => 'success', 'data' => $bot, 'message' => 'Luwu bot thành công, ID: ' . $bot->id]);
+        return response()->json(['status' => 'success', 'data' => $bot, 'message' => 'Lưu bot thành công, ID: ' . $bot->id]);
     }
 
     public function index(Request $request)
