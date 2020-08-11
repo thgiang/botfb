@@ -238,7 +238,8 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
 }
 
 
-function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0) {
+function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0)
+{
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -262,7 +263,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
             "sec-fetch-user: ?1",
             "sec-fetch-dest: document",
             "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
-            "cookie: ".$cookie
+            "cookie: " . $cookie
         ),
     ));
 
@@ -287,7 +288,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
                 }
             }
         }
-    } elseif($postOwnerType == 'friend' || $postOwnerType == 'fanpage') {
+    } elseif ($postOwnerType == 'friend' || $postOwnerType == 'fanpage') {
         preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp/", $response, $matches);
         if (isset($matches[2])) {
             $listPostOwnerIDs = array_values(array_unique($matches[2]));
@@ -299,7 +300,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
             foreach ($listPostOwnerIDs as $index => $postOwnerID) {
                 $postIDOfThisOwner = $listPostIDs[$index];
 
-                if (preg_match("/%3Apage_id\.".$postOwnerID."%3A/", $response)) {
+                if (preg_match("/%3Apage_id\." . $postOwnerID . "%3A/", $response)) {
                     array_push($listPostIDsOfFanpage, (object)[
                         "post_id" => $postIDOfThisOwner,
                         "owner_id" => $postOwnerID
@@ -312,7 +313,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
                 }
             }
 
-            if($postOwnerType == 'friend') {
+            if ($postOwnerType == 'friend') {
                 $listIDs = $listPostIDsOfUser;
             } else {
                 $listIDs = $listPostIDsOfFanpage;
@@ -336,10 +337,10 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
     }
 
     // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
-    if(count($listIDs) == 0 && $tryCount <= 5) {
+    if (count($listIDs) == 0 && $tryCount <= 5) {
         preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
         if (isset($nextCursor[0])) {
-            $nextCursor = "https://mbasic.facebook.com/".rtrim($nextCursor[0], '"');
+            $nextCursor = "https://mbasic.facebook.com/" . rtrim($nextCursor[0], '"');
             $nextTry = $tryCount + 1;
             getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor, $nextTry);
         }
@@ -457,7 +458,7 @@ function checkProxy($proxy)
 }
 
 // Example: uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $cookie, $dtsg)
-function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null)
+function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy = null)
 {
     $curlGetImage = curl_init($imageURL);
     $fileName = rand(0, 10000) . '.png';
@@ -467,6 +468,11 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $proxy = null)
     curl_exec($curlGetImage);
     curl_close($curlGetImage);
     fclose($fp);
+
+    // Nếu cần ghi text thì ghi lên và ghi đè biến $fileName, bên dưới sẽ gọi hàm unlink để xóa ảnh đi
+    if ($text != null) {
+        $fileName = writeTextToImage($fileName, $text);
+    }
 
     $curl = curl_init();
 
@@ -556,7 +562,6 @@ function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID, $proxy =
 
 function DoShortCode($str)
 {
-    $str = str_replace('{icon}', RandomEmotion(), $str);
     $str = str_replace('{enter}', "\n", $str);
     $str = str_replace('{ngay}', date("d", time()), $str);
     $str = str_replace('{thang}', date("m", time()), $str);
@@ -564,7 +569,16 @@ function DoShortCode($str)
     $str = str_replace('{gio}', date("H", time()), $str);
     $str = str_replace('{phut}', date("i", time()), $str);
     $str = str_replace('{giay}', date("s", time()), $str);
-    return $str;
+
+    if (preg_match("/{icon}/", $str)) {
+        $parts = explode('{icon}', $str);
+        $str = "";
+        foreach ($parts as $part) {
+            $str .= $part . ' ' . RandomEmotion();
+        }
+    }
+
+    return trim($str);
 }
 
 function RandomEmotion()

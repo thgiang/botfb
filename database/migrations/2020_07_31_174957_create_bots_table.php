@@ -30,6 +30,7 @@ class CreateBotsTable extends Migration
             $table->text('comment_image_url')->nullable();
             $table->string('comment_sticker_collection', 191)->nullable();
 
+            $table->string('run_time')->default("[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]");
             $table->integer('start_time')->default(8);
             $table->integer('end_time')->default(23);
 

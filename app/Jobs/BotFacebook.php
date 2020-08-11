@@ -162,6 +162,9 @@ class BotFacebook implements ShouldQueue
                 }
             }
 
+            // Lấy tên chủ post
+            $postOwnerName = getPostOwner($bot->cookie, $bot->proxy, $postId);
+
             // Post ảnh
             $photoId = null;
             if ($stickerId == null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
@@ -171,7 +174,7 @@ class BotFacebook implements ShouldQueue
                 if (count($photoUrls) > 0) {
                     $commentPhoto = $photoUrls[rand(0, count($photoUrls) - 1)];
                 }
-                $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $bot->proxy);
+                $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $postOwnerName, $bot->proxy);
             }
 
             // Build nội dung comment
@@ -184,7 +187,7 @@ class BotFacebook implements ShouldQueue
                 $commentContent = RandomComment();
             }
             if (preg_match("/{name}/", $commentContent)) {
-                $commentContent = str_replace("{name}", getPostOwner($bot->cookie, $bot->proxy, $postId), $commentContent);
+                $commentContent = str_replace("{name}", $postOwnerName, $commentContent);
             }
 
             // Gửi comment

@@ -30,14 +30,14 @@ class HomeController extends Controller
     }
 
     public function testJob() {
-		$bot = Bot::where('count_error', '<', config('bot.max_try_time'))->first();
-		$fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
-		$photoId = uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $bot->cookie, $fbDtg, $bot->proxy);
-		if ($photoId) {
-			echo "Up ảnh ".$photoId." lên FB, dùng cookie ".$bot->cookie.", dtsg = ".$fbDtg." proxy: ".$bot->proxy;
-		} else {
-			echo 'Up ảnh ko thành công';
-		}
-		exit();
+//		$bot = Bot::where('count_error', '<', config('bot.max_try_time'))->first();
+//		$fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
+//		$photoId = uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $bot->cookie, $fbDtg, $bot->proxy);
+//		if ($photoId) {
+//			echo "Up ảnh ".$photoId." lên FB, dùng cookie ".$bot->cookie.", dtsg = ".$fbDtg." proxy: ".$bot->proxy;
+//		} else {
+//			echo 'Up ảnh ko thành công';
+//		}
+//		exit();
     }
 }

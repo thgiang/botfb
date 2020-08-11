@@ -28,7 +28,14 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-//    $bot = Bot::first();
-//    print_r(BotFacebook::dispatch($bot->id));
-    echo $_SERVER['SERVER_ADDR'];
+    $text = "{icon}{icon} {name} {gio}/{phut} {icon}{icon}";
+//    $parts = explode('{icon}', $text);
+//    $text = "";
+//    foreach ($parts as $part) {
+//        $text .= $part . ' '. RandomEmotion();
+//    }
+//    $nowHour = date('H');
+    $nowHour = 20;
+    $bot = Bot::where('run_time', 'LIKE', '%' . $nowHour . '%')->first();
+    return $bot;
 });
