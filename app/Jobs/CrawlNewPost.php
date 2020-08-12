@@ -52,6 +52,8 @@ class CrawlNewPost implements ShouldQueue
 
         // Token OK, lấy 2 bài gần nhất
         $feed = FacebookGet($this->fb_id . '/feed', array('limit' => config('bot.white_list_feed_limit')), $token->token, $token->proxy);
+        echo 'Tim bai viet moi cua white list';
+        print_r($feed);
         if (empty($feed) || empty($feed->data)) {
             return;
         }

@@ -25,7 +25,8 @@ class BotController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
+            return response()->json([
+                'status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
         }
 
 
@@ -33,7 +34,10 @@ class BotController extends Controller
         $tryTestProxy = 0;
         do {
             if ($tryTestProxy >= 3) {
-                return response()->json(['status' => 'error', 'message' => 'Proxy không hoạt động, vui lòng kiểm tra lại!']);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Proxy không hoạt động, vui lòng kiểm tra lại!'
+                ]);
             }
             $checkProxy = checkProxy($request->proxy);
             $tryTestProxy++;
@@ -80,44 +84,30 @@ class BotController extends Controller
                 ]);
             }
 
-            $bot->cookie = isset($request->cookie) ? $request->cookie : $bot->cookie;
-            $bot->name = isset($request->name) ? $request->name : $bot->name;
-            $bot->proxy = isset($request->proxy) ? $request->proxy : $bot->proxy;
-            $bot->bot_target = isset($request->bot_target) ? $request->bot_target : $bot->bot_target;
-            $bot->reaction_on = isset($request->reaction_on) ? $request->reaction_on : $bot->reaction_on;
-            $bot->reaction_frequency = isset($request->reaction_frequency) ? $request->reaction_frequency : $bot->reaction_frequency;
-            $bot->reaction_type = isset($request->reaction_type) ? $request->reaction_type : $bot->reaction_type;
-            $bot->comment_on = isset($request->comment_on) ? $request->comment_on : $bot->comment_on;
-            $bot->comment_frequency = isset($request->comment_frequency) ? $request->comment_frequency : $bot->comment_frequency;
-            $bot->comment_image_url = isset($request->comment_image_url) ? $request->comment_image_url : $bot->comment_image_url;
-            $bot->comment_sticker_collection = isset($request->comment_sticker_collection) ? $request->comment_sticker_collection : $bot->comment_sticker_collection;
-            $bot->comment_content = isset($request->comment_content) ? $request->comment_content : $bot->comment_content;
-            $bot->run_time = isset($request->run_time) ? $request->run_time : $bot->run_time;
-            $bot->black_list = isset($request->black_list) ? $request->black_list : $bot->black_list;
-            $bot->white_list = isset($request->white_list) ? $request->white_list : $bot->white_list;
-
+            foreach ($bot as $key => $value) {
+                if (isset($request->{$key})) {
+                    $bot->{$key} = $request->{$key};
+                }
+            }
             $bot->count_error = 0;
-
             $bot->save();
-        }
 
-        // Lưu danh sách white list nếu có
-        if ($request->white_list) {
-            $request->white_list = str_replace("\r", '', $request->white_list);
-            if ($request->bot_id) {
-                // Nếu update bot đã có từ trc thì xóa hết white list cũ đi để thêm lại
-                WhiteListIds::where('bot_id', $request->bot_id)->delete();
-            }
-            $fbIds = explode("\n", $request->white_list);
-            foreach ($fbIds as $fbId) {
-                $newWhiteList = new WhiteListIds();
-                $newWhiteList->bot_id = $bot->id;
-                $newWhiteList->fb_id = $fbId;
-                $newWhiteList->save();
-            }
+            WhiteListIds::where('bot_id', $request->bot_id)->delete();
         }
 
         if ($bot) {
+            // Lưu danh sách white list nếu có
+            if ($request->white_list) {
+                $request->white_list = str_replace("\r", '', $request->white_list);
+                $fbIds = explode("\n", $request->white_list);
+                foreach ($fbIds as $fbId) {
+                    $newWhiteList = new WhiteListIds();
+                    $newWhiteList->bot_id = $bot->id;
+                    $newWhiteList->fb_id = $fbId;
+                    $newWhiteList->save();
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Lưu bot thành công, ID: ' . $bot->id,

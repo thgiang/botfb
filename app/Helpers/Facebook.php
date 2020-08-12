@@ -238,7 +238,7 @@ function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCraw
 }
 
 
-function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0)
+function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $ignoreFbIds = array(), $ignoreFbPostIds = array(), $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0)
 {
     $curl = curl_init();
 
@@ -270,7 +270,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
     $response = curl_exec($curl);
     curl_close($curl);
     // echo $response;
-    $listIDs = [];
+    $posts = [];
 
     if ($postOwnerType == 'group') {
         preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
@@ -281,7 +281,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
                 preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
                 if (isset($postOwnerID[1])) {
                     $postOwnerID = $postOwnerID[1];
-                    array_push($listIDs, (object)[
+                    array_push($posts, (object)[
                         "post_id" => $postID,
                         "owner_id" => $postOwnerID
                     ]);
@@ -314,9 +314,9 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
             }
 
             if ($postOwnerType == 'friend') {
-                $listIDs = $listPostIDsOfUser;
+                $posts = $listPostIDsOfUser;
             } else {
-                $listIDs = $listPostIDsOfFanpage;
+                $posts = $listPostIDsOfFanpage;
             }
         }
     } else {
@@ -327,7 +327,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
                 preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
                 if (isset($postOwnerID[1])) {
                     $postOwnerID = $postOwnerID[1];
-                    array_push($listIDs, (object)[
+                    array_push($posts, (object)[
                         "post_id" => $postID,
                         "owner_id" => $postOwnerID
                     ]);
@@ -336,17 +336,27 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $u
         }
     }
 
+    // Loc black list
+    foreach ($posts as $key => $post) {
+        if (in_array($post->post_id, $ignoreFbPostIds)) {
+            unset($posts[$key]);
+        }
+        if (in_array($post->owner_id, $ignoreFbIds)) {
+            unset($posts[$key]);
+        }
+    }
+
     // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
-    if (count($listIDs) == 0 && $tryCount <= 5) {
+    if (count($posts) == 0 && $tryCount <= 5) {
         preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
         if (isset($nextCursor[0])) {
             $nextCursor = "https://mbasic.facebook.com/" . rtrim($nextCursor[0], '"');
             $nextTry = $tryCount + 1;
-            getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor, $nextTry);
+            getPostsFromNewFeed2($cookie, $proxy, $postOwnerType, $ignoreFbIds, $ignoreFbPostIds, $nextCursor, $nextTry);
         }
     }
 
-    return $listIDs;
+    return $posts;
 }
 
 
@@ -575,7 +585,7 @@ function DoShortCode($str, $extraData = array())
     if (!empty($extraData['name'])) {
         $name = $extraData['name'];
     }
-    $str = str_replace('{ten}', date("s", $name), $str);
+    $str = str_replace('{ten}', $name, $str);
 
     // Shortcode icon
     if (preg_match("/{icon}/", $str)) {

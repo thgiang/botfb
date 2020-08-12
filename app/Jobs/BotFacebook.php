@@ -74,9 +74,9 @@ class BotFacebook implements ShouldQueue
 
         // Chọn $postId theo quy tắc đã setup + kiểm tra xem $postId đã từng tồn tại trong DB chưa
 
-        $allPostReactioned = BotLog::where('bot_id', $bot->id)->pluck('post_id')->toArray();
+        $ignoreFBPostIds = BotLog::where('bot_id', $bot->id)->pluck('post_id')->toArray();
         $postId = $this->postId;
-        if ($postId == '' || in_array($postId, $allPostReactioned)) {
+        if ($postId == '' || in_array($postId, $ignoreFBPostIds)) {
             $tryFindPost = 0;
             $newsFeedIsEmpty = true;
             do {
@@ -102,15 +102,15 @@ class BotFacebook implements ShouldQueue
                         return;
                     }
                 }
-                $postIds = getPostsFromNewFeed($bot->cookie, $bot->proxy, $bot->bot_target);
-                if (is_array($postIds) && !empty($postIds)) {
+                $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
+                $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy, $bot->bot_target, $ignoreFbIds, $ignoreFBPostIds);
+                if (is_array($posts) && !empty($posts)) {
                     $newsFeedIsEmpty = false;
-                    $difIds = array_diff($postIds, $allPostReactioned);
-                    if (count($difIds) > 0) {
-                        $postId = $difIds[rand(0, count($difIds) - 1)];
-                    }
+                    $post = $posts[rand(0, count($posts) - 1)];
+                    $postId = $post->post_id;
+
                 }
-            } while ($postId == '' || in_array($postId, $allPostReactioned));
+            } while ($postId == '' || in_array($postId, $ignoreFBPostIds));
         }
 
 
