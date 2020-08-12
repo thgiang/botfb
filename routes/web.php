@@ -13,9 +13,10 @@
 
 use App\Jobs\BotFacebook;
 use App\Models\Bot;
+use Carbon\Carbon;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Auth::routes();
@@ -28,14 +29,5 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-    $text = "{icon}{icon} {name} {gio}/{phut} {icon}{icon}";
-//    $parts = explode('{icon}', $text);
-//    $text = "";
-//    foreach ($parts as $part) {
-//        $text .= $part . ' '. RandomEmotion();
-//    }
-//    $nowHour = date('H');
-    $nowHour = 20;
-    $bot = Bot::where('run_time', 'LIKE', '%' . $nowHour . '%')->first();
-    return $bot;
+
 });

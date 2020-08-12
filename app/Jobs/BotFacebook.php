@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Bot;
 use App\Models\BotLog;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -113,15 +114,15 @@ class BotFacebook implements ShouldQueue
         }
 
 
-        // Lấy thời gian bắt đầu và kết thúc của bot
-        if ($bot->start_time > $bot->end_time) {
-            // Trường hợp chạy đêm, ví dụ 23h hôm trc tới 8h sáng hôm sau
-            $start_time = strtotime('yesterday +' . $bot->start_time . 'hours');
-            $end_time = strtotime('today +' . $bot->end_time . 'hours');
-        } else {
-            $start_time = strtotime('today +' . $bot->start_time . 'hours');
-            $end_time = strtotime('today +' . $bot->end_time . 'hours');
-        }
+//        // Lấy thời gian bắt đầu và kết thúc của bot
+//        if ($bot->start_time > $bot->end_time) {
+//            // Trường hợp chạy đêm, ví dụ 23h hôm trc tới 8h sáng hôm sau
+//            $start_time = strtotime('yesterday +' . $bot->start_time . 'hours');
+//            $end_time = strtotime('today +' . $bot->end_time . 'hours');
+//        } else {
+//            $start_time = strtotime('today +' . $bot->start_time . 'hours');
+//            $end_time = strtotime('today +' . $bot->end_time . 'hours');
+//        }
 
         // Nếu bật Reaction
         if ($bot->reaction_on && ($bot->next_reaction_time <= time() || $this->postId != '')) {
@@ -144,10 +145,28 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần reaction tiếp theo
-            $bot->next_reaction_time = min(max($start_time, time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60), $end_time);
-            if ($bot->next_reaction_time >= $end_time) {
-                // Nếu quá giờ chạy rồi thì thôi để mai like tiếp
-                $bot->next_reaction_time = $start_time + 24 * 60 * 60;
+            $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
+            $tempHour = date("H", $bot->next_reaction_time);
+            $hours = json_decode($bot->run_time);
+            if (!empty($hours)) {
+                // Nếu next_reaction_time ko thỏa mãn 1 trong các múi giờ thì phải chọn giờ lớn hơn gần nhất
+                if (!in_array($tempHour, $hours)) {
+                    $foundTime = false;
+                    foreach ($hours as $hour) {
+                        if ($hour > $tempHour) {
+                            $time = Carbon::now();
+                            $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hour, rand(0, 5), rand(0, 30))->timestamp;
+                            $foundTime = true;
+                            break;
+                        }
+                    }
+
+                    // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
+                    if (!$foundTime) {
+                        $time = Carbon::tomorrow();
+                        $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], rand(0, 5), rand(0, 30))->timestamp;
+                    }
+                }
             }
         }
 
@@ -181,13 +200,10 @@ class BotFacebook implements ShouldQueue
             $commentContent = '';
             $comments = explode("\n", $bot->comment_content);
             if (count($comments) > 0) {
-                $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)]);
+                $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)], array('name' => $postOwnerName));
             }
             if (empty($commentContent)) {
                 $commentContent = RandomComment();
-            }
-            if (preg_match("/{name}/", $commentContent)) {
-                $commentContent = str_replace("{name}", $postOwnerName, $commentContent);
             }
 
             // Gửi comment
@@ -203,10 +219,28 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần comment tiếp theo
-            $bot->next_comment_time = min(max($start_time, time() + $bot->comment_frequency * rand(75, 125) / 100 * 60), $end_time);
-            if ($bot->next_comment_time >= $end_time) {
-                // Nếu quá giờ chạy rồi thì thôi để mai comment tiếp
-                $bot->next_comment_time = $start_time + 24 * 60 * 60;
+            $bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
+            $tempHour = date("H", $bot->next_comment_time);
+            $hours = json_decode($bot->run_time);
+            if (!empty($hours)) {
+                // Nếu next_comment_time ko thỏa mãn 1 trong các múi giờ thì phải chọn giờ lớn hơn gần nhất
+                if (!in_array($tempHour, $hours)) {
+                    $foundTime = false;
+                    foreach ($hours as $hour) {
+                        if ($hour > $tempHour) {
+                            $time = Carbon::now();
+                            $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hour, rand(0, 5), rand(0, 30))->timestamp;
+                            $foundTime = true;
+                            break;
+                        }
+                    }
+
+                    // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
+                    if (!$foundTime) {
+                        $time = Carbon::tomorrow();
+                        $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], rand(0, 5), rand(0, 30))->timestamp;
+                    }
+                }
             }
         }
 

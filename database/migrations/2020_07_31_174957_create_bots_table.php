@@ -17,6 +17,7 @@ class CreateBotsTable extends Migration
             $table->bigIncrements('id');
             $table->text('cookie');
             $table->string('name', 255)->default('');
+            $table->string('facebook_uid', 255);
             $table->string('proxy', 191)->default('0:0')->nullable();
 
             $table->boolean('reaction_on')->default(false);
@@ -31,8 +32,8 @@ class CreateBotsTable extends Migration
             $table->string('comment_sticker_collection', 191)->nullable();
 
             $table->string('run_time')->default("[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]");
-            $table->integer('start_time')->default(8);
-            $table->integer('end_time')->default(23);
+//            $table->integer('start_time')->default(8);
+//            $table->integer('end_time')->default(23);
 
             $table->text('black_list')->nullable();
             $table->text('white_list')->nullable();

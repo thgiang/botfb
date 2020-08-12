@@ -191,19 +191,27 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <div class="col-sm-6">
-                                        <label>Bắt đầu từ</label>
-                                        <select class="form-control" v-model="formData.start_time">
-                                            <option v-for="hour in 24" :value="hour-1">{{ hour -1 }} giờ</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label>Đến</label>
-                                        <select class="form-control" v-model="formData.end_time">
-                                            <option v-for="hour in 24" :value="hour - 1">{{ hour - 1 }} giờ</option>
-                                        </select>
+                                    <label class="col-sm-2 col-form-label">Thời gian tương tác</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control"
+                                               placeholder="Thời gian tương tác, cách nhau bằng dấu ','. Ví dụ muốn bot chạy vào 8h sáng, 11h trưa, 5h chiều thì nhập: 8,11,17"
+                                               v-model="formData.run_time">
                                     </div>
                                 </div>
+                                <!--                                <div class="form-group row">-->
+                                <!--                                    <div class="col-sm-6">-->
+                                <!--                                        <label>Bắt đầu từ</label>-->
+                                <!--                                        <select class="form-control" v-model="formData.start_time">-->
+                                <!--                                            <option v-for="hour in 24" :value="hour-1">{{ hour -1 }} giờ</option>-->
+                                <!--                                        </select>-->
+                                <!--                                    </div>-->
+                                <!--                                    <div class="col-sm-6">-->
+                                <!--                                        <label>Đến</label>-->
+                                <!--                                        <select class="form-control" v-model="formData.end_time">-->
+                                <!--                                            <option v-for="hour in 24" :value="hour - 1">{{ hour - 1 }} giờ</option>-->
+                                <!--                                        </select>-->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
                                 <!--                                <div class="form-group row">-->
                                 <!--                                    <label class="col-sm-2 col-form-label">Số ngày thuê</label>-->
                                 <!--                                    <div class="col-sm-10">-->
@@ -271,8 +279,9 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                     comment_sticker_collection: '',
                     comment_content: '',
 
-                    start_time: 8,
-                    end_time: 20,
+                    // start_time: 8,
+                    // end_time: 20,
+                    run_time: null,
 
                     black_list: '',
                     white_list: '',
@@ -1335,7 +1344,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                 text: response.data.message
                             });
                         }
-                        console.log(response);
+                        console.log(response.data);
                     })
                     .catch(function (error) {
                         console.log(error);

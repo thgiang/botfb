@@ -560,7 +560,7 @@ function randomStickerOfCollection($cookie, $dtsg, $stickerColletionID, $proxy =
     return false;
 }
 
-function DoShortCode($str)
+function DoShortCode($str, $extraData = array())
 {
     $str = str_replace('{enter}', "\n", $str);
     $str = str_replace('{ngay}', date("d", time()), $str);
@@ -570,11 +570,22 @@ function DoShortCode($str)
     $str = str_replace('{phut}', date("i", time()), $str);
     $str = str_replace('{giay}', date("s", time()), $str);
 
+    // Shortcode tên
+    $name = 'Bạn ơi';
+    if (!empty($extraData['name'])) {
+        $name = $extraData['name'];
+    }
+    $str = str_replace('{ten}', date("s", $name), $str);
+
+    // Shortcode icon
     if (preg_match("/{icon}/", $str)) {
         $parts = explode('{icon}', $str);
         $str = "";
-        foreach ($parts as $part) {
-            $str .= $part . ' ' . RandomEmotion();
+        for ($i = 0; $i < count($parts) - 1; $i++) {
+            $str .= $parts[$i];
+            if ($i < count($parts) - 1) {
+                $str .= RandomEmotion();
+            }
         }
     }
 
