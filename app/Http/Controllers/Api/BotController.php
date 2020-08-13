@@ -110,20 +110,24 @@ class BotController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Lưu bot thành công, ID: ' . $bot->id,
+                'message' => 'Lưu bot thành công!',
                 'data' => $bot
             ]);
         }
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Lưu bot thất bại'
+            'message' => 'Lưu bot thất bại!'
         ]);
     }
 
     public function index(Request $request)
     {
-        $bots = Bot::paginate(10);
+        if (isset($request->bot_id)) {
+            $bots = Bot::where('id', $request->bot_id)->paginate(10);
+        } else {
+            $bots = Bot::paginate(10);
+        }
         if ($bots) {
             return response()->json([
                 'status' => 'success',
@@ -154,14 +158,18 @@ class BotController extends Controller
         ]);
     }
 
-    public function logs()
+    public function logs(Request $request)
     {
-        $botLogs = BotLog::orderBy('updated_at', 'DESC')->paginate(10);
+        if (isset($request->bot_id)) {
+            $botLogs = BotLog::where('bot_id', $request->bot_id)->orderBy('updated_at', 'DESC')->paginate(10);
+        } else {
+            $botLogs = BotLog::orderBy('updated_at', 'DESC')->paginate(10);
+        }
 
         if ($botLogs) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Lấy lịch sử bots thành công!',
+                'message' => 'Lấy lịch sử thành công!',
                 'data' => $botLogs
             ]);
         }
@@ -169,6 +177,54 @@ class BotController extends Controller
         return response()->json([
             'status' => 'error',
             'message' => 'Lấy lịch sử thất bại!'
+        ]);
+    }
+
+    public function checkLiveCookie(Request $request)
+    {
+        $proxy = null;
+        $needNewProxy = false;
+        $cookie = $request->cookie;
+        $tinsoftKey = 'TL1R0qfoVL8MqWnRk82wiXed2aa13DyRSmtNTE';
+
+        // Kiểm tra key Tinsoft này đang cầm proxy nào không
+        $getNowProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/getProxy.php?key=" . $tinsoftKey);
+        if ($getNowProxy) {
+            $getNowProxy = json_decode($getNowProxy);
+            if ($getNowProxy->success == false || $getNowProxy->next_change == 0) {
+                $needNewProxy = true;
+            } else {
+                $proxy = $getNowProxy->proxy;
+            }
+        }
+
+        // Nếu không thì lấy proxy mới
+        if ($needNewProxy == true) {
+            $getNewProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/changeProxy.php?key=" . $tinsoftKey);
+            if ($getNewProxy) {
+                $getNewProxy = json_decode($getNewProxy);
+                if ($getNowProxy->success == true) {
+                    $proxy = $getNewProxy->proxy;
+                }
+            }
+        }
+
+        // Nếu lấy proxy thành công thì check acc có sosongs không
+        if ($proxy != null) {
+            $checkAccount = getBasicInfoFromCookie($cookie, $proxy);
+            if ($checkAccount != false) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $checkAccount
+                ]);
+            }
+        } else {
+            sendMessageTelegram("Phần lấy proxy ở hàm checkLiveCookie, dòng 219 đang hỏng");
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Cookie không live'
         ]);
     }
 }

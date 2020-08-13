@@ -39,6 +39,7 @@ class CrawlNewPost implements ShouldQueue
         $token = SystemToken::where('is_live', true)->inRandomOrder()->first();
         if (!$token) {
             // TODO: Bắn thông báo lên telegram
+            sendMessageTelegram("LỖI TO: KHÔNG CÒN TOKEN ĐỂ CRAWL BÀI VIẾT");
             Log::error('LỖI TO: KHÔNG CÒN TOKEN ĐỂ CRAWL BÀI VIẾT');
             return;
         }
@@ -48,6 +49,7 @@ class CrawlNewPost implements ShouldQueue
         if (empty($tokenInfo) || empty($tokenInfo->id)) {
             $token->is_live = false;
             $token->save();
+            return;
         }
 
         // Token OK, lấy 2 bài gần nhất

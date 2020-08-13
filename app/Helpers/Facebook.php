@@ -277,11 +277,14 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
 
         if (isset($matches[2])) {
             $listPostIDs = array_values(array_unique($matches[2]));
+            $listGroupIDs = array_values(array_unique($matches[1]));
             foreach ($listPostIDs as $key => $postID) {
                 preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
                 if (isset($postOwnerID[1])) {
                     $postOwnerID = $postOwnerID[1];
-                    array_push($posts, (object)[
+                    $groupID = $listGroupIDs[$key];
+                    array_push($listIDs, (object)[
+                        "group_id" => $groupID,
                         "post_id" => $postID,
                         "owner_id" => $postOwnerID
                     ]);
@@ -357,6 +360,59 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
     }
 
     return $posts;
+}
+
+function getPostsFromGroup($cookie, $groupID, $proxy = null)
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://mbasic.facebook.com/groups/" . $groupID,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: mbasic.facebook.com",
+            "cache-control: max-age=0",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: none",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: " . $cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+    curl_close($curl);
+
+    $listIDs = [];
+    preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
+
+    if (isset($matches[2])) {
+        $listPostIDs = array_values(array_unique($matches[2]));
+        foreach ($listPostIDs as $key => $postID) {
+            preg_match("/_objid\.$postID%3Acontent_owner_id_new\.([0-9]+)%/", $response, $postOwnerID);
+            if (isset($postOwnerID[1])) {
+                $postOwnerID = $postOwnerID[1];
+                array_push($listIDs, (object)[
+                    "group_id" => $groupID,
+                    "post_id" => $postID,
+                    "owner_id" => $postOwnerID
+                ]);
+            }
+        }
+    }
+
+    return $listIDs;
 }
 
 
@@ -696,4 +752,41 @@ function FacebookGet($path, $queries, $access_token, $proxy = null)
     } else {
         return json_decode($dataString);
     }
+}
+
+function getBasicInfoFromCookie($cookie, $proxy = null) {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://mbasic.facebook.com/me",
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: mbasic.facebook.com",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: none",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: ".$cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    preg_match("/\<title\>(.*)<\/title\>/", $response, $name);
+    if(isset($name[1]) && !preg_match("/facebook/", strtolower($name[1]))) {
+        return $name[1];
+    }
+    return false;
 }

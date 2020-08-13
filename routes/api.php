@@ -21,6 +21,7 @@ Route::post('/bots/save', 'Api\BotController@save');
 Route::get('/bots', 'Api\BotController@index');
 Route::get('/bots/logs', 'Api\BotController@logs');
 Route::get('/bots/delete', 'Api\BotController@delete');
+Route::post('/bots/check', 'Api\BotController@checkLiveCookie');
 
 
 Route::get('/logs', 'Api\LogController@logs');
