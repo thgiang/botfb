@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bot;
 use App\Models\BotLog;
 use App\Models\WhiteListIds;
+use App\Models\WhiteGroupIds;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -93,6 +94,7 @@ class BotController extends Controller
             $bot->save();
 
             WhiteListIds::where('bot_id', $request->bot_id)->delete();
+            WhiteGroupIds::where('bot_id', $request->bot_id)->delete();
         }
 
         if ($bot) {
@@ -105,6 +107,18 @@ class BotController extends Controller
                     $newWhiteList->bot_id = $bot->id;
                     $newWhiteList->fb_id = $fbId;
                     $newWhiteList->save();
+                }
+            }
+
+            // Lưu danh sách white group nếu có
+            if ($request->white_group) {
+                $request->white_group = str_replace("\r", '', $request->white_group);
+                $fbIds = explode("\n", $request->white_group);
+                foreach ($fbIds as $fbId) {
+                    $newWhiteGroup = new WhiteGroupIds();
+                    $newWhiteGroup->bot_id = $bot->id;
+                    $newWhiteGroup->fb_id = $fbId;
+                    $newWhiteGroup->save();
                 }
             }
 

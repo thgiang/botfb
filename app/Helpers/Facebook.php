@@ -283,7 +283,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
                 if (isset($postOwnerID[1])) {
                     $postOwnerID = $postOwnerID[1];
                     $groupID = $listGroupIDs[$key];
-                    array_push($listIDs, (object)[
+                    array_push($posts, (object)[
                         "group_id" => $groupID,
                         "post_id" => $postID,
                         "owner_id" => $postOwnerID
@@ -297,29 +297,20 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
             $listPostOwnerIDs = array_values(array_unique($matches[2]));
             $listPostIDs = array_values(array_unique($matches[1]));
 
-            $listPostIDsOfFanpage = [];
-            $listPostIDsOfUser = [];
-
             foreach ($listPostOwnerIDs as $index => $postOwnerID) {
                 $postIDOfThisOwner = $listPostIDs[$index];
 
                 if (preg_match("/%3Apage_id\." . $postOwnerID . "%3A/", $response)) {
-                    array_push($listPostIDsOfFanpage, (object)[
+                    array_push($posts, (object)[
                         "post_id" => $postIDOfThisOwner,
                         "owner_id" => $postOwnerID
                     ]);
                 } else {
-                    array_push($listPostIDsOfUser, (object)[
+                    array_push($posts, (object)[
                         "post_id" => $postIDOfThisOwner,
                         "owner_id" => $postOwnerID
                     ]);
                 }
-            }
-
-            if ($postOwnerType == 'friend') {
-                $posts = $listPostIDsOfUser;
-            } else {
-                $posts = $listPostIDsOfFanpage;
             }
         }
     } else {

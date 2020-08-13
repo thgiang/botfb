@@ -44,6 +44,7 @@
                                             <option value="fanpage">Chỉ bài viết từ Fanpage</option>
                                             <option value="group">Chỉ bài viết từ Group</option>
                                             <option value="whitelist">Chỉ bài viết từ Whitelist</option>
+                                            <option value="whitegroup">Chỉ bài viết từ Whitelist</option>
                                         </select>
                                     </div>
                                 </div>
@@ -64,7 +65,7 @@
                                             <label class="col-sm-8 col-form-label">Mỗi lần like cách nhau</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="formData.reaction_frequency">
-                                                    <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút
+                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{ minutes }} phút
                                                     </option>
                                                 </select>
                                             </div>
@@ -103,7 +104,7 @@
                                             <label class="col-sm-8 col-form-label">Mỗi lần comment cách nhau</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="formData.comment_frequency">
-                                                    <option v-for="minutes in 60" :value="minutes">{{ minutes }} phút
+                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{ minutes }} phút
                                                     </option>
                                                 </select>
                                             </div>
@@ -147,7 +148,7 @@
                                             <div class="input-group input-group-sm">
                                                 <select class="form-control"
                                                         v-model="formData.comment_sticker_collection">
-                                                    <option v-for="sticker_collection in sticker_collections_id"
+                                                    <option v-for="(sticker_collection, s_index) in sticker_collections_id" :key="s_index"
                                                             :value="sticker_collection.id">{{ sticker_collection.name
                                                         }}
                                                     </option>
@@ -189,7 +190,42 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                     <textarea class="form-control" rows="3" v-model="formData.white_list"
                                               placeholder="Mỗi UID một dòng"></textarea>
                                     </div>
+                                    <div class="col-sm-2">&nbsp;</div>
+                                    <div class="col-sm-5">
+                                        <label>
+                                            <input type="checkbox" v-model="formData.white_list_comment_on" />
+                                            Bật auto comment
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <label>
+                                            <input type="checkbox" v-model="formData.white_list_reaction_on" />
+                                            Bật thả reaction
+                                        </label>
+                                    </div>
                                 </div>
+
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Whitelist Group (ưu tiên tương tác trong các group này)</label>
+                                    <div class="col-sm-10">
+                                    <textarea class="form-control" rows="3" v-model="formData.white_group"
+                                              placeholder="Mỗi Group ID một dòng"></textarea>
+                                    </div>
+                                    <div class="col-sm-2">&nbsp;</div>
+                                    <div class="col-sm-5">
+                                        <label>
+                                            <input type="checkbox" v-model="formData.white_group_comment_on" />
+                                            Bật auto comment
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <label>
+                                            <input type="checkbox" v-model="formData.white_group_reaction_on" />
+                                            Bật thả reaction
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Thời gian tương tác</label>
                                     <div class="col-sm-10">
@@ -198,38 +234,6 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                                v-model="formData.run_time">
                                     </div>
                                 </div>
-                                <!--                                <div class="form-group row">-->
-                                <!--                                    <div class="col-sm-6">-->
-                                <!--                                        <label>Bắt đầu từ</label>-->
-                                <!--                                        <select class="form-control" v-model="formData.start_time">-->
-                                <!--                                            <option v-for="hour in 24" :value="hour-1">{{ hour -1 }} giờ</option>-->
-                                <!--                                        </select>-->
-                                <!--                                    </div>-->
-                                <!--                                    <div class="col-sm-6">-->
-                                <!--                                        <label>Đến</label>-->
-                                <!--                                        <select class="form-control" v-model="formData.end_time">-->
-                                <!--                                            <option v-for="hour in 24" :value="hour - 1">{{ hour - 1 }} giờ</option>-->
-                                <!--                                        </select>-->
-                                <!--                                    </div>-->
-                                <!--                                </div>-->
-                                <!--                                <div class="form-group row">-->
-                                <!--                                    <label class="col-sm-2 col-form-label">Số ngày thuê</label>-->
-                                <!--                                    <div class="col-sm-10">-->
-                                <!--                                        <input type="number" class="form-control" id="thoigianthue" value="10"-->
-                                <!--                                               onchange="checktien()" placeholder="Nhập số ngày muốn thuê">-->
-                                <!--                                    </div>-->
-                                <!--                                </div>-->
-                                <!--                                <div class="col-12 text-center bold">-->
-                                <!--                                    <div class="card">-->
-                                <!--                                        <div class="card-body">-->
-                                <!--                                            <h5>Tổng : <span class="font-weight-bold"><span class="text-primary"-->
-                                <!--                                                                                            id="starnhat">21,000</span></span>-->
-                                <!--                                                <small>vnđ</small></h5>-->
-                                <!--                                            <h6 class="mb-0">Giá Bot Reaction của bạn là <span-->
-                                <!--                                                class="text-primary">2,100</span> <small>vnđ</small>/ngày</h6>-->
-                                <!--                                        </div>-->
-                                <!--                                    </div>-->
-                                <!--                                </div>-->
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <button type="button" class="btn btn-block btn-success btn-sm"
@@ -285,6 +289,12 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
 
                     black_list: '',
                     white_list: '',
+                    white_list_comment_on: false,
+                    white_list_reaction_on: true,
+
+                    white_group: '',
+                    white_group_comment_on: false,
+                    white_group_reaction_on: true,
                 },
                 sticker_collections_id: [
                     {
