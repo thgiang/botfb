@@ -1,8 +1,12 @@
 <?php
 
-function LoadJpeg($imgname)
+function LoadImage($imgname)
 {
-    $im = @imagecreatefromjpeg($imgname);
+    if (exif_imagetype($imgname) == IMAGETYPE_PNG) {
+        $im = @imagecreatefrompng($imgname);
+    } else {
+        $im = @imagecreatefromjpeg($imgname);
+    }
     if (!$im) {
         $im = imagecreatetruecolor(150, 30);
         $bgc = imagecolorallocate($im, 255, 255, 255);
@@ -26,13 +30,12 @@ function randomPic($dir = 'images')
 
 function writeTextToImage($originalImage, $text = "Hello")
 {
-    $img = LoadJpeg($originalImage);
-
+    $img = LoadImage($originalImage);
     $white = imagecolorallocate($img, 255, 255, 255);
     $borderColor = imagecolorallocate($img, 255, 182, 193);
     $orig_width = imagesx($img);
     $orig_height = imagesy($img);
-    $font_path = '/home/codedao.jas.plus/public_html/public/SVN-Vandella.otf';
+    $font_path = '/home/codedao.jas.plus/public_html/public/image_generator/SVN-Vandella.otf';
 
     // Add text to image
     $font_size = $orig_width / 3 / mb_strlen($text) * 3;
@@ -54,6 +57,6 @@ function writeTextToImage($originalImage, $text = "Hello")
     } while (file_exists($fileName));
     imagejpeg($img, $fileName);
 
-//    unlink($originalImage);
+    unlink($originalImage);
     return $fileName;
 }

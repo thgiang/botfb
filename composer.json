@@ -15,7 +15,8 @@
       "ext-curl": "*",
         "ext-json": "*",
       "ext-gd": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ext-exif": "*"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

@@ -518,7 +518,8 @@ function checkProxy($proxy)
 function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy = null)
 {
     $curlGetImage = curl_init($imageURL);
-    $fileName = rand(0, 10000) . '.png';
+    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.png';
+//    $fileName = rand(0, 10000) . '.png';
     $fp = fopen($fileName, 'w+');
     curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
     curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
@@ -565,7 +566,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     curl_close($curl);
     $responseData = str_replace("for (;;);", "", $response);
     $json = json_decode($responseData);
-//    unlink($fileName);
+    unlink($fileName);
     if (isset($json->payload) && isset($json->payload->fbid)) {
         return $json->payload->fbid;
     } else {
