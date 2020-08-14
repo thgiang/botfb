@@ -13,7 +13,7 @@ class CreateWhiteGroupIdsTable extends Migration
      */
     public function up()
     {
-        Schema::create('white_list_ids', function (Blueprint $table) {
+        Schema::create('white_group_ids', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('bot_id');
             $table->string('fb_id');
@@ -31,6 +31,6 @@ class CreateWhiteGroupIdsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('white_list_ids');
+        Schema::dropIfExists('white_group_ids');
     }
 }
