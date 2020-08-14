@@ -161,6 +161,7 @@ class BotFacebook implements ShouldQueue
                 $botLog->bot_fid = $bot->facebook_uid;
                 $botLog->action = $reactionType;
                 $botLog->post_id = $postId;
+                $botLog->request_source = $this->requestSource;
                 $botLog->save();
             }
 
@@ -235,6 +236,8 @@ class BotFacebook implements ShouldQueue
                 $botLog->action = 'COMMENT';
                 $botLog->comment_id = $comment;
                 $botLog->comment_content = $commentContent;
+                $botLog->sticker_id = $stickerId;
+                $botLog->request_source = $this->requestSource;
                 $botLog->post_id = $postId;
                 $botLog->save();
             }

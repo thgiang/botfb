@@ -16,11 +16,12 @@ class CreateBotLogsTable extends Migration
         Schema::create('bot_logs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('bot_id');
-            $table->string('bot_fid', 191);
+            $table->string('bot_fid', 191)->default('');
             $table->string('post_id', 191);
             $table->string('action', 191)->default('COMMENT');
             $table->string('comment_id', 191)->nullable();
             $table->string('sticker_id', 191)->nullable();
+            $table->string('request_source', 191)->default('');
             $table->text('comment_content')->nullable();
             $table->timestamps();
 
