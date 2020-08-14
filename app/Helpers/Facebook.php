@@ -154,90 +154,6 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
     }
 }
 
-function getPostsFromNewFeed($cookie, $proxy, $postOwnerType = 'all', $urlToCrawl = "https://mbasic.facebook.com/stories.php")
-{
-    $curl = curl_init();
-
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => $urlToCrawl,
-        CURLOPT_PROXY => $proxy,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "GET",
-        CURLOPT_HTTPHEADER => array(
-            "authority: m.facebook.com",
-            "cache-control: max-age=0",
-            "upgrade-insecure-requests: 1",
-            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
-            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "sec-fetch-site: same-origin",
-            "sec-fetch-mode: navigate",
-            "sec-fetch-user: ?1",
-            "sec-fetch-dest: document",
-            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
-            "cookie: " . $cookie
-        ),
-    ));
-
-    $response = curl_exec($curl);
-    curl_close($curl);
-
-    $listIDs = [];
-
-    if ($postOwnerType == 'group') {
-        preg_match_all("/groups\/([0-9]+)\?view=permalink&amp;id=([0-9]+)&amp;/", $response, $matches);
-        if (isset($matches[2])) {
-            $listIDs = array_values(array_unique($matches[2]));
-        }
-    } elseif ($postOwnerType == 'friend' || $postOwnerType == 'fanpage') {
-        preg_match_all("/story\.php\?story_fbid=([0-9]+)&amp;id=([0-9]+)&amp/", $response, $matches);
-        if (isset($matches[2])) {
-            $listPostOwnerIDs = array_values(array_unique($matches[2]));
-            $listPostIDs = array_values(array_unique($matches[1]));
-
-            $listPostIDsOfFanpage = [];
-            $listPostIDsOfUser = [];
-
-            foreach ($listPostOwnerIDs as $index => $postOwnerID) {
-                $postIDOfThisOwner = $listPostIDs[$index];
-
-                if (preg_match("/%3Apage_id\." . $postOwnerID . "%3A/", $response)) {
-                    array_push($listPostIDsOfFanpage, $postIDOfThisOwner);
-                } else {
-                    array_push($listPostIDsOfUser, $postIDOfThisOwner);
-                }
-            }
-
-            if ($postOwnerType == 'friend') {
-                $listIDs = array_values(array_unique($listPostIDsOfUser));
-            } else {
-                $listIDs = array_values(array_unique($listPostIDsOfFanpage));
-            }
-        }
-    } else {
-        preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);
-        if (isset($matches[1])) {
-            $listIDs = array_values(array_unique($matches[1]));
-        }
-    }
-
-    // // Nếu đến đây chưa tìm được post thì crawl tới page tiếp theo để tìm tiếp
-    if (count($listIDs) == 0) {
-        preg_match("/stories\.php\?aftercursorr\=(.*?)\"/", $response, $nextCursor);
-        if (isset($nextCursor[0])) {
-            $nextCursor = "https://mbasic.facebook.com" . rtrim($nextCursor[0], '"');
-        }
-        getPostsFromNewFeed($cookie, $proxy, $postOwnerType, $nextCursor);
-    }
-
-    return $listIDs;
-}
-
-
 function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $ignoreFbIds = array(), $ignoreFbPostIds = array(), $urlToCrawl = "https://mbasic.facebook.com/stories.php", $tryCount = 0)
 {
     $curl = curl_init();
@@ -569,6 +485,44 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     unlink($fileName);
     if (isset($json->payload) && isset($json->payload->fbid)) {
         return $json->payload->fbid;
+    } else {
+        return false;
+    }
+}
+
+function checkCookieJoinedGroup($cookie, $groupID, $proxy = null) {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://mbasic.facebook.com/groups/".$groupID,
+        CURLOPT_PROXY => $proxy,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "authority: mbasic.facebook.com",
+            "cache-control: max-age=0",
+            "upgrade-insecure-requests: 1",
+            "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site: none",
+            "sec-fetch-mode: navigate",
+            "sec-fetch-user: ?1",
+            "sec-fetch-dest: document",
+            "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
+            "cookie: ".$cookie
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    if (preg_match("/group\/join\/\?group_id/", $response)) {
+        return true;
     } else {
         return false;
     }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property mixed bot_id
+ * @property string bot_fid
  * @property mixed comment_id
  * @property string action
  * @property string post_id

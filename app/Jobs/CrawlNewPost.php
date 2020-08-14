@@ -47,6 +47,8 @@ class CrawlNewPost implements ShouldQueue
         // Lấy proxy để request
         $proxy = getTinsoftProxy();
         if ($proxy == false) {
+            sendMessageTelegram("WARNING: Hàm lấy proxy Tinsoft ko trả về đc proxy nên bot phải chờ tới lần chạy sau");
+            Log::error('WARNING: Hàm lấy proxy Tinsoft ko trả về đc proxy nên bot phải chờ tới lần chạy sau');
             return;
         }
 
@@ -55,6 +57,10 @@ class CrawlNewPost implements ShouldQueue
         if (empty($tokenInfo) || empty($tokenInfo->id)) {
             $token->is_live = false;
             $token->save();
+
+            $countLiveToken =  SystemToken::where('is_live', true)->count();
+            sendMessageTelegram("WARNING: Thêm 1 token vừa die, hệ thống chỉ còn ".$countLiveToken." token");
+            Log::error("WARNING: Thêm 1 token vừa die, hệ thống chỉ còn ".$countLiveToken." token");
             return;
         }
 
@@ -69,11 +75,15 @@ class CrawlNewPost implements ShouldQueue
             // Lấy tất cả các bot đang coi FB này là white list
             $botIds = WhiteListIds::select('bot_id')->where('fb_id', $this->fb_id)->get()->pluck('bot_id');
             foreach ($botIds as $botId) {
+                $bot = Bot::where('id', $botId)->first();
+                if (!$bot) {
+                    continue;
+                }
                 $postId = str_replace($this->fb_id . '_', '', $post->id);
                 // Tìm trong history xem đã tương tác với bài này chưa
-                $history = BotLog::where('bot_id', $botId)->where('post_id', $postId)->first();
+                $history = BotLog::where('bot_fid', $bot->facebook_uid)->where('post_id', $postId)->first();
                 if (!$history) {
-                    BotFacebook::dispatch($botId, $postId);
+                    BotFacebook::dispatch($botId, $postId, 'white_list');
                 }
             }
         }

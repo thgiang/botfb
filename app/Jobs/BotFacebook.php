@@ -18,17 +18,23 @@ class BotFacebook implements ShouldQueue
 
     private $botId;
     private $postId;
+    private $requestSource;
+    private $extraData;
 
     /**
-     * Create a new job instance. Nếu truyền $postId thì bot sẽ tương tác ngay với post đó, ko cần quan tâm thời gian hẹn giờ
+     * Create a new job instance. Nếu truyền $postId thì bot sẽ tương tác ngay với post đó, ko cần quan tâm thời gian hẹn giờ.
+     * $requestSource là nguồn gốc Bot này bị gọi từ đâu. Hiện có 3 nguồn là WhiteList, WhiteGroup và hẹn giờ thông thường
      *
      * @param int $botId
      * @param string $postId
+     * @param string $requestSource
      */
-    public function __construct($botId, $postId = '')
+    public function __construct($botId, $postId = '', $requestSource = '', $extraData = array())
     {
         $this->botId = $botId;
         $this->postId = $postId;
+        $this->requestSource = $requestSource;
+        $this->extraData = (array)$extraData;
     }
 
     /**
@@ -41,6 +47,20 @@ class BotFacebook implements ShouldQueue
         $bot = Bot::where('id', $this->botId)->first();
         if (!$bot) {
             return;
+        } else if ($bot->count_error >= config('bot.max_try_time')) {
+            $bot->touch();
+            return;
+        }
+
+        // Nếu lệnh từ white_list hoặc white_group thì dùng setting riêng
+        $comment_on = $bot->comment_on;
+        $reaction_on = $bot->reaction_on;
+        if ($this->requestSource == 'white_list') {
+            $comment_on = $bot->white_list_comment_on;
+            $reaction_on = $bot->white_list_reaction_on;
+        } else if ($this->requestSource == 'white_group') {
+            $comment_on = $bot->white_group_comment_on;
+            $reaction_on = $bot->white_group_reaction_on;
         }
 
         if (empty($bot->proxy) || count(explode(':', $bot->proxy)) !== 2) {
@@ -74,8 +94,16 @@ class BotFacebook implements ShouldQueue
 
         // Chọn $postId theo quy tắc đã setup + kiểm tra xem $postId đã từng tồn tại trong DB chưa
 
-        $ignoreFBPostIds = BotLog::where('bot_id', $bot->id)->pluck('post_id')->toArray();
+        $ignoreFBPostIds = BotLog::where('bot_fid', $bot->facebook_uid)->pluck('post_id')->toArray();
+        $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
         $postId = $this->postId;
+
+        // Nếu white_list, white_group đẩy ID xuống bắt like nhưng thằng này nằm trong blacklist thì cũng nghỉ
+        if (!empty($this->extraData['owner_id']) && in_array($this->extraData['owner_id'], $ignoreFbIds)) {
+            return;
+        }
+
+        // Nếu chưa biết phải tương tác với bài nào thì đi tìm, còn white_list và white_group thì nó truyền hẳn ID xuống r
         if ($postId == '' || in_array($postId, $ignoreFBPostIds)) {
             $tryFindPost = 0;
             $newsFeedIsEmpty = true;
@@ -102,7 +130,7 @@ class BotFacebook implements ShouldQueue
                         return;
                     }
                 }
-                $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
+
                 $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy, $bot->bot_target, $ignoreFbIds, $ignoreFBPostIds);
                 if (is_array($posts) && !empty($posts)) {
                     $newsFeedIsEmpty = false;
@@ -113,19 +141,10 @@ class BotFacebook implements ShouldQueue
             } while ($postId == '' || in_array($postId, $ignoreFBPostIds));
         }
 
-
-//        // Lấy thời gian bắt đầu và kết thúc của bot
-//        if ($bot->start_time > $bot->end_time) {
-//            // Trường hợp chạy đêm, ví dụ 23h hôm trc tới 8h sáng hôm sau
-//            $start_time = strtotime('yesterday +' . $bot->start_time . 'hours');
-//            $end_time = strtotime('today +' . $bot->end_time . 'hours');
-//        } else {
-//            $start_time = strtotime('today +' . $bot->start_time . 'hours');
-//            $end_time = strtotime('today +' . $bot->end_time . 'hours');
-//        }
+        // TODO: Nếu bài post sắp tương tác thuộc white_list hoặc group chưa bài đó thuộc white_group thì phải lấy setting theo white_??_comment_on, white_??_reaction_on
 
         // Nếu bật Reaction
-        if ($bot->reaction_on && ($bot->next_reaction_time <= time() || $this->postId != '')) {
+        if ($reaction_on && ($bot->next_comment_time <= time() || $this->requestSource == 'white_list' || $this->requestSource == 'white_group')) {
             // Chọn theo cảm xúc khách setup, nếu khách setup số linh tinh thì chọn random 1 trong các cảm xúc
             $reactions = array(1, 2, 3, 4, 6, 8, 16);
             if (in_array($bot->reaction_type, $reactions)) {
@@ -139,6 +158,7 @@ class BotFacebook implements ShouldQueue
             if ($reaction) {
                 $botLog = new BotLog();
                 $botLog->bot_id = $bot->id;
+                $botLog->bot_fid = $bot->facebook_uid;
                 $botLog->action = $reactionType;
                 $botLog->post_id = $postId;
                 $botLog->save();
@@ -171,7 +191,7 @@ class BotFacebook implements ShouldQueue
         }
 
         // Nếu bật Auto comment
-        if ($bot->comment_on && ($bot->next_comment_time <= time() || $this->postId != '')) {
+        if ($comment_on && ($bot->next_comment_time <= time() || $this->requestSource == 'white_list' || $this->requestSource == 'white_group')) {
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
             if (!empty($bot->comment_sticker_collection)) {
@@ -211,6 +231,7 @@ class BotFacebook implements ShouldQueue
             if ($comment) {
                 $botLog = new BotLog();
                 $botLog->bot_id = $bot->id;
+                $botLog->bot_fid = $bot->facebook_uid;
                 $botLog->action = 'COMMENT';
                 $botLog->comment_id = $comment;
                 $botLog->comment_content = $commentContent;

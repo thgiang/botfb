@@ -44,7 +44,7 @@ class BotByTime extends Command
         })->chunkById(100, function ($bots) {
             foreach ($bots as $bot) {
                 // Nếu là whitelist thì đã có job BotByWhiteList xử lý nên ko xử lý ở đây nữa.
-                if ($bot->bot_target != 'whitelist') {
+                if ($bot->bot_target != 'whitelist' && $bot->bot_target != 'whitegroup') {
                     BotFacebook::dispatch($bot->id);
                 }
             }

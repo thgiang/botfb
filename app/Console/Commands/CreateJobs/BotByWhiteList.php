@@ -48,8 +48,11 @@ class BotByWhiteList extends Command
         WhiteListIds::chunkById(100, function ($whiteLists) use ($fbIds) {
             foreach ($whiteLists as $whiteList) {
                 if (!in_array($whiteList->fb_id, $fbIds)) {
-                    $fbIds[] = $whiteList->fb_id;
-                    CrawlNewPost::dispatch($whiteList->fb_id);
+                    $bot = Bot::where('id', $whiteList->bot_id)->first();
+                    if ($bot && $bot->count_error < config('bot.max_try_time')) {
+                        $fbIds[] = $whiteList->fb_id;
+                        CrawlNewPost::dispatch($whiteList->fb_id);
+                    }
                 }
             }
         });
@@ -57,8 +60,11 @@ class BotByWhiteList extends Command
         WhiteGroupIds::chunkById(100, function ($whiteGroups) use ($fbGroupIds) {
             foreach ($whiteGroups as $whiteGroup) {
                 if (!in_array($whiteGroup->fb_id, $fbGroupIds)) {
-                    $fbGroupIds[] = $whiteGroup->fb_id;
-                    CrawlNewGroupPost::dispatch($whiteGroup->fb_id);
+                    $bot = Bot::where('id', $whiteGroup->bot_id)->first();
+                    if ($bot && $bot->count_error < config('bot.max_try_time')) {
+                        $fbGroupIds[] = $whiteGroup->fb_id;
+                        CrawlNewGroupPost::dispatch($whiteGroup->fb_id);
+                    }
                 }
             }
         });
