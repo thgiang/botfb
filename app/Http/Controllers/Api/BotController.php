@@ -49,11 +49,11 @@ class BotController extends Controller
 
         // Xóa kí tự \r ở dấu xuống dòng
         if ($request->comment_content) {
-            $request->comment_content = str_replace("\r", '', $request->comment_content);
+            $request['comment_content'] = str_replace("\r", '', $request->comment_content);
         }
 
         // Chuyển run_time thành array :D
-        $request->run_time = '[' . $request->run_time . ']';
+        $request['run_time'] = '[' . $request->run_time . ']';
 
         // Lưu bot
         if (!$request->bot_id) {
@@ -196,35 +196,11 @@ class BotController extends Controller
 
     public function checkLiveCookie(Request $request)
     {
-        $proxy = null;
-        $needNewProxy = false;
         $cookie = $request->cookie;
-        $tinsoftKey = 'TL1R0qfoVL8MqWnRk82wiXed2aa13DyRSmtNTE';
+        $proxy = getTinsoftProxy();
 
-        // Kiểm tra key Tinsoft này đang cầm proxy nào không
-        $getNowProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/getProxy.php?key=" . $tinsoftKey);
-        if ($getNowProxy) {
-            $getNowProxy = json_decode($getNowProxy);
-            if ($getNowProxy->success == false || $getNowProxy->next_change == 0) {
-                $needNewProxy = true;
-            } else {
-                $proxy = $getNowProxy->proxy;
-            }
-        }
-
-        // Nếu không thì lấy proxy mới
-        if ($needNewProxy == true) {
-            $getNewProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/changeProxy.php?key=" . $tinsoftKey);
-            if ($getNewProxy) {
-                $getNewProxy = json_decode($getNewProxy);
-                if ($getNowProxy->success == true) {
-                    $proxy = $getNewProxy->proxy;
-                }
-            }
-        }
-
-        // Nếu lấy proxy thành công thì check acc có sosongs không
-        if ($proxy != null) {
+        // Nếu lấy proxy thành công thì check xem cookie có sống không
+        if ($proxy != false) {
             $checkAccount = getBasicInfoFromCookie($cookie, $proxy);
             if ($checkAccount != false) {
                 return response()->json([
@@ -232,8 +208,6 @@ class BotController extends Controller
                     'message' => $checkAccount
                 ]);
             }
-        } else {
-            sendMessageTelegram("Phần lấy proxy ở hàm checkLiveCookie, dòng 219 đang hỏng");
         }
 
         return response()->json([

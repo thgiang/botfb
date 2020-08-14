@@ -54,6 +54,6 @@ function writeTextToImage($originalImage, $text = "Hello")
     } while (file_exists($fileName));
     imagejpeg($img, $fileName);
 
-    unlink($originalImage);
+//    unlink($originalImage);
     return $fileName;
 }

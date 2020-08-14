@@ -46,6 +46,7 @@
         "files": [
             "app/Helpers/Facebook.php",
             "app/Helpers/Telegram.php",
+            "app/Helpers/Tinsoft.php",
             "app/Helpers/Images.php"
         ]
     },

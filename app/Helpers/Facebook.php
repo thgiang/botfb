@@ -280,7 +280,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
             $listGroupIDs = array_values(array_unique($matches[1]));
             foreach ($listPostIDs as $key => $postID) {
                 preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
-                if (isset($postOwnerID[1])) {
+                if (isset($postOwnerID[1]) && isset($listGroupIDs[$key])) {
                     $postOwnerID = $postOwnerID[1];
                     $groupID = $listGroupIDs[$key];
                     array_push($posts, (object)[
@@ -520,6 +520,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     $curlGetImage = curl_init($imageURL);
     $fileName = rand(0, 10000) . '.png';
     $fp = fopen($fileName, 'w+');
+    curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
     curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
     curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
     curl_exec($curlGetImage);
@@ -564,7 +565,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     curl_close($curl);
     $responseData = str_replace("for (;;);", "", $response);
     $json = json_decode($responseData);
-    unlink($fileName);
+//    unlink($fileName);
     if (isset($json->payload) && isset($json->payload->fbid)) {
         return $json->payload->fbid;
     } else {
@@ -745,7 +746,8 @@ function FacebookGet($path, $queries, $access_token, $proxy = null)
     }
 }
 
-function getBasicInfoFromCookie($cookie, $proxy = null) {
+function getBasicInfoFromCookie($cookie, $proxy = null)
+{
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -768,7 +770,7 @@ function getBasicInfoFromCookie($cookie, $proxy = null) {
             "sec-fetch-user: ?1",
             "sec-fetch-dest: document",
             "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
-            "cookie: ".$cookie
+            "cookie: " . $cookie
         ),
     ));
 
@@ -776,7 +778,7 @@ function getBasicInfoFromCookie($cookie, $proxy = null) {
 
     curl_close($curl);
     preg_match("/\<title\>(.*)<\/title\>/", $response, $name);
-    if(isset($name[1]) && !preg_match("/facebook/", strtolower($name[1]))) {
+    if (isset($name[1]) && !preg_match("/facebook/", strtolower($name[1]))) {
         return $name[1];
     }
     return false;

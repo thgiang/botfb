@@ -29,6 +29,7 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-    $test = new \App\Http\Controllers\Api\BotController();
-    return $test->checkLiveCookie();
+//    $test = new \App\Http\Controllers\Api\BotController();
+//    return $test->checkLiveCookie();
+    return getTinsoftProxy();
 });

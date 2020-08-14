@@ -44,8 +44,14 @@ class CrawlNewPost implements ShouldQueue
             return;
         }
 
+        // Lấy proxy để request
+        $proxy = getTinsoftProxy();
+        if ($proxy == false) {
+            return;
+        }
+
         // Lấy thông tin token
-        $tokenInfo = FacebookGet('me', array(), $token->token, $token->proxy);
+        $tokenInfo = FacebookGet('me', array(), $token->token, $proxy);
         if (empty($tokenInfo) || empty($tokenInfo->id)) {
             $token->is_live = false;
             $token->save();
@@ -53,7 +59,7 @@ class CrawlNewPost implements ShouldQueue
         }
 
         // Token OK, lấy 2 bài gần nhất
-        $feed = FacebookGet($this->fb_id . '/feed', array('limit' => config('bot.white_list_feed_limit')), $token->token, $token->proxy);
+        $feed = FacebookGet($this->fb_id . '/feed', array('limit' => config('bot.white_list_feed_limit')), $token->token, $proxy);
         if (empty($feed) || empty($feed->data)) {
             return;
         }
@@ -63,7 +69,7 @@ class CrawlNewPost implements ShouldQueue
             // Lấy tất cả các bot đang coi FB này là white list
             $botIds = WhiteListIds::select('bot_id')->where('fb_id', $this->fb_id)->get()->pluck('bot_id');
             foreach ($botIds as $botId) {
-                $postId = str_replace($this->fb_id.'_', '', $post->id);
+                $postId = str_replace($this->fb_id . '_', '', $post->id);
                 // Tìm trong history xem đã tương tác với bài này chưa
                 $history = BotLog::where('bot_id', $botId)->where('post_id', $postId)->first();
                 if (!$history) {
