@@ -41,11 +41,12 @@ class CrawlNewGroupPost implements ShouldQueue
         $bots = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
 
         $bot = null;
-        for ($i = 0; $i < count($bots) - 1; $i++) {
-            $bot = $bots[$i];
-            if (checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
+        foreach ($bots AS $b) {
+			$bt = Bot::where('id', $b->id)->first();
+            //if ($bt && checkCookieJoinedGroup($bt->cookie, $this->fb_id, $bt->proxy)) {
+				$bot = $bt;
                 break;
-            }
+            //}
         }
         if ($bot == null) {
             sendMessageTelegram("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này");
