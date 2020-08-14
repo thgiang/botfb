@@ -3,7 +3,7 @@ function getTinsoftProxy()
 {
     $proxy = false;
     $needNewProxy = false;
-    $lastRequest = file_get_contents("last_request_tinsoft.txt");
+    $lastRequest = file_get_contents(__DIR__ . "/last_request_tinsoft.txt");
     $allowRequest = false;
     if (time() - (int)$lastRequest > 10) {
         $allowRequest = true;
@@ -15,7 +15,7 @@ function getTinsoftProxy()
     $getNowProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/getProxy.php?key=" . $tinsoftKey);
     if ($getNowProxy) {
         $getNowProxy = json_decode($getNowProxy);
-        if ($getNowProxy->success == false || $getNowProxy->next_change == 0) {
+        if (($getNowProxy->success == false || $getNowProxy->next_change == 0) && $allowRequest == true) {
             $needNewProxy = true;
         } else {
             $proxy = $getNowProxy->proxy;
@@ -23,7 +23,7 @@ function getTinsoftProxy()
     }
 
     // Nếu không thì lấy proxy mới
-    if ($needNewProxy == true && $allowRequest == true) {
+    if ($needNewProxy == true) {
         $getNewProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/changeProxy.php?key=" . $tinsoftKey);
         if ($getNewProxy) {
             $getNewProxy = json_decode($getNewProxy);
@@ -37,6 +37,6 @@ function getTinsoftProxy()
         sendMessageTelegram("Lấy proxy từ Tinsoft thất bại");
     }
 
-    fwrite(fopen("last_request_tinsoft.txt", "w+"), time());
+    fwrite(fopen(__DIR__ . "/last_request_tinsoft.txt", "w+"), time());
     return $proxy;
 }

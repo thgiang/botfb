@@ -29,21 +29,5 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-//    $imageURL = 'https://www.upsieutoc.com/images/2020/08/14/Meo-tai-cp29551b74f7b9ecde.png';
-//    $curlGetImage = curl_init($imageURL);
-//    $text = 'Nguyễn Trung';
-//    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.png';
-//    $fp = fopen($fileName, 'w+');
-//    curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
-//    curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
-//    curl_exec($curlGetImage);
-//    curl_close($curlGetImage);
-//    fclose($fp);
-//
-//    // Nếu cần ghi text thì ghi lên và ghi đè biến $fileName, bên dưới sẽ gọi hàm unlink để xóa ảnh đi
-//    if ($text != null) {
-//        $fileName = writeTextToImage($fileName, $text);
-//    }
-//    echo 'https://codedao.jas.plus/' . $fileName;
-//    exit();
+    return getTinsoftProxy();
 });
