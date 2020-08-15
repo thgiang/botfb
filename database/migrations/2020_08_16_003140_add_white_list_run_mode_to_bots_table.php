@@ -14,7 +14,8 @@ class AddWhiteListRunModeToBotsTable extends Migration
     public function up()
     {
         Schema::table('bots', function (Blueprint $table) {
-            //
+            $table->string('white_list_run_mode')->after('white_list')->default('asap');
+            $table->string('white_group_run_mode')->after('white_group')->default('asap');
         });
     }
 
