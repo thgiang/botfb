@@ -2,18 +2,23 @@
 
 function LoadImage($imgname)
 {
+	$extensions = explode(".", $imgname);
+	$extension = 'jpg';
+	if (count($extensions) > 0) {
+		$extension = $extensions[count($extensions) - 1];
+	}
+	
 	try {
-		if (exif_imagetype($imgname) == IMAGETYPE_PNG) {
-			$im = @imagecreatefrompng($imgname);
+		if ($extension && $extension == 'png') {
+			$im = imagecreatefrompng($imgname);
 		} else {
-			$im = @imagecreatefromjpeg($imgname);
-		}
-		if (!$im) {
-			$im = @imagecreatefromjpeg('/home/codedao.jas.plus/public_html/public/image_generator/default2.jpg');
+			$im = imagecreatefromjpeg($imgname);
 		}
 		return $im;
 	} catch (\Exception $e) {
-		$im = @imagecreatefromjpeg('/home/codedao.jas.plus/public_html/public/image_generator/default.jpg');
+		sendMessageTelegram($imgname. " Lỗi ghép ảnh - text ". $e->getMessage());
+        Log::error($imgname . " Lỗi ghép ảnh - text ". $e->getMessage());
+		$im = imagecreatefromjpeg('/home/codedao.jas.plus/public_html/public/image_generator/default.jpg');
 		return $im;
 	}    
 }
@@ -58,6 +63,6 @@ function writeTextToImage($originalImage, $text = "Hello")
     } while (file_exists($fileName));
     imagejpeg($img, $fileName);
 
-    unlink($originalImage);
+    //unlink($originalImage);
     return $fileName;
 }

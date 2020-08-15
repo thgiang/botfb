@@ -30,25 +30,32 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-	$group_id = '2181665685234594';
-     // Lấy 1 con bot đang coi group này là white_group với điều kiện nó phải join rồi để quét đc bài mới
-        $bots = WhiteGroupIds::where('fb_id', $group_id)->get();
+	$imageURL = 'https://tienich.xyz/files/images/blog/5c72b16b70356-33364927_117543379126709_6905426441161146368_o.jpg';
+	$parts = explode('.', $imageURL);
+	$extension = '';
+	if ($parts && count($parts) > 0) {
+		$extension = $parts[count($parts) - 1];
+	}
+	if ($extension != 'jpg' && $extension != 'png') {
+		return false;
+	}
+	
+    $curlGetImage = curl_init($imageURL);
+    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.'.$extension;
+//    $fileName = rand(0, 10000) . '.png';
+    $fp = fopen($fileName, 'w+');
+    //curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
+    curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
+    curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
+    curl_exec($curlGetImage);
+    curl_close($curlGetImage);
+    fclose($fp);
 
-        $foundBot = null;
-        foreach ($bots AS $bt) {
-			$bot = Bot::where('id', $bt->id)->first();
-			echo $bot->cookie .'<br><br>';
-            //if ($bot && checkCookieJoinedGroup($bot->cookie, $group_id, $bot->proxy)) {
-				$foundBot = $bot;
-                break;
-            //}
-        }
-        if ($foundBot == null) {
-           echo "WARNING: Đang quét bài mới của group " . $group_id . " nhưng ko có bot nào quét đc bài viết của group này";
-            return;
-        } else {
-			 $posts = getPostsFromGroup($bot->cookie, $group_id, $bot->proxy);
-			 print_r($posts);
-		}
-		exit();
+    // Nếu cần ghi text thì ghi lên và ghi đè biến $fileName, bên dưới sẽ gọi hàm unlink để xóa ảnh đi
+	$text = "haha";
+    if ($text != null) {
+        $fileName = writeTextToImage($fileName, $text);
+    }
+	
+	exit($fileName);
 });

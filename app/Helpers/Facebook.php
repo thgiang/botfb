@@ -433,11 +433,20 @@ function checkProxy($proxy)
 // Example: uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $cookie, $dtsg)
 function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy = null)
 {
+	$parts = explode('.', $imageURL);
+	$extension = '';
+	if ($parts && count($parts) > 0) {
+		$extension = $parts[count($parts) - 1];
+	}
+	if ($extension != 'jpg' && $extension != 'png') {
+		return false;
+	}
+	
     $curlGetImage = curl_init($imageURL);
-    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.png';
+    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.'.$extension;
 //    $fileName = rand(0, 10000) . '.png';
     $fp = fopen($fileName, 'w+');
-    curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
+    //curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
     curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
     curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
     curl_exec($curlGetImage);

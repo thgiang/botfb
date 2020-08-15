@@ -38,25 +38,30 @@ class CrawlNewGroupPost implements ShouldQueue
     public function handle()
     {
         // Lấy 1 con bot đang coi group này là white_group với điều kiện nó phải join rồi để quét đc bài mới
-        $bots = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
+        $whiteIds = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
 
-        $bot = null;
-        foreach ($bots AS $b) {
-			$bt = Bot::where('id', $b->id)->first();
-            //if ($bt && checkCookieJoinedGroup($bt->cookie, $this->fb_id, $bt->proxy)) {
-				$bot = $bt;
+        $foundBot = null;
+        foreach ($whiteIds AS $white) {
+			$bot = Bot::where('id', $white->bot_id)->first();
+            //if ($bot && checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
+				$foundBot = $bot;
                 break;
             //}
         }
-        if ($bot == null) {
+        if ($foundBot == null) {
             sendMessageTelegram("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này");
             Log::error("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này");
             return;
         }
 
         // Gọi tất cả các bot,
-        $posts = getPostsFromGroup($bot->cookie, $this->fb_id, $bot->proxy);
-        foreach ($bots as $bot) {
+        $posts = getPostsFromGroup($foundBot->cookie, $this->fb_id, $foundBot->proxy);
+        foreach ($whiteIds as $white) {
+			$bot = Bot::where('id', $white->bot_id)->first();
+			if (!$bot) {
+				continue;
+			}
+			
             $countPost = 0;
             foreach ($posts as $post) {
                 // Nếu tương tác đủ 2 bài rồi thì break; mỗi bot chỉ cần thế thôi
