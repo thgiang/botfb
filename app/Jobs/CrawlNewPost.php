@@ -79,6 +79,12 @@ class CrawlNewPost implements ShouldQueue
                 if (!$bot) {
                     continue;
                 }
+				// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
+				if ($bot->white_list_run_mode == 'mixed') {
+					if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+						continue;
+					}
+				}
                 $postId = str_replace($this->fb_id . '_', '', $post->id);
                 // Tìm trong history xem đã tương tác với bài này chưa
                 $history = BotLog::where('bot_fid', $bot->facebook_uid)->where('post_id', $postId)->first();

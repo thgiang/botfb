@@ -41,15 +41,32 @@ class CrawlNewGroupPost implements ShouldQueue
         $whiteIds = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
 
         $foundBot = null;
+        $logs = "";
         foreach ($whiteIds AS $white) {
-			$bot = Bot::where('id', $white->bot_id)->first();
-            //if ($bot && checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
-				$foundBot = $bot;
-                break;
-            //}
+            $bot = Bot::where('id', $white->bot_id)->first();
+			// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
+			if ($bot->white_group_run_mode == 'mixed') {
+				if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+					continue;
+				}
+			}
+			
+            if ($bot) {
+                if (checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
+                    $foundBot = $bot;
+                    break;
+                } else {
+                    $logs .= "Bot ID " . $white->bot_id . " tồn tại trong bảng Bot, có proxy " . $bot->proxy . " nhưng không quét được bài đăng của group " . $this->fb_id . " \n\n";
+                    $logs .= "\n\nCode debug: \n";
+                    $logs .= "checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)";
+                }
+            } else {
+                $logs .= "Bot ID " . $white->bot_id . " không tồn tại trong bảng bot \n\n";
+            }
         }
+
         if ($foundBot == null) {
-            sendMessageTelegram("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này");
+            sendMessageTelegram("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này. \n\nLogs: " . $logs);
             Log::error("WARNING: Đang quét bài mới của group " . $this->fb_id . " nhưng ko có bot nào quét đc bài viết của group này");
             return;
         }
@@ -57,15 +74,22 @@ class CrawlNewGroupPost implements ShouldQueue
         // Gọi tất cả các bot,
         $posts = getPostsFromGroup($foundBot->cookie, $this->fb_id, $foundBot->proxy);
         foreach ($whiteIds as $white) {
-			$bot = Bot::where('id', $white->bot_id)->first();
-			if (!$bot) {
-				continue;
+            $bot = Bot::where('id', $white->bot_id)->first();
+            if (!$bot) {
+                continue;
+            }
+
+			// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
+			if ($bot->white_group_run_mode == 'mixed') {
+				if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+					continue;
+				}
 			}
 			
             $countPost = 0;
             foreach ($posts as $post) {
                 // Nếu tương tác đủ 2 bài rồi thì break; mỗi bot chỉ cần thế thôi
-                if ($countPost > config('bot.white_list_feed_limit')) {
+                if ($countPost > config('bot . white_list_feed_limit')) {
                     break;
                 }
                 // Tìm xem bot này đã tương tác với bài viết này chưa

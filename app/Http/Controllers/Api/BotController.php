@@ -175,7 +175,7 @@ class BotController extends Controller
     public function logs(Request $request)
     {
         if (isset($request->bot_id)) {
-            $botLogs = BotLog::where('bot_id', $request->bot_id)->orderBy('updated_at', 'DESC')->paginate(10);
+            $botLogs = BotLog::where('bot_id', $request->bot_id)->orWhere('facebook_uid', $request->bot_id)->orderBy('updated_at', 'DESC')->paginate(10);
         } else {
             $botLogs = BotLog::orderBy('updated_at', 'DESC')->paginate(10);
         }

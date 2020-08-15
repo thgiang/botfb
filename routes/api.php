@@ -23,5 +23,23 @@ Route::get('/bots/logs', 'Api\BotController@logs');
 Route::get('/bots/delete', 'Api\BotController@delete');
 Route::post('/bots/check', 'Api\BotController@checkLiveCookie');
 
+Route::get('test', function () {
+    return 'test';
+});
+Route::get('systems-token', function (Request $request) {
+    $token = $request->token;
+    $addNewToken = \App\Models\SystemToken::updateOrCreate([
+        'token' => $token
+    ], [
+        'is_live' => true
+    ]);
+    if ($addNewToken) {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Thêm token mới thành công',
+            'data' => $addNewToken
+        ]);
+    }
+});
 
 Route::get('/logs', 'Api\LogController@logs');

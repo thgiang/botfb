@@ -30,32 +30,10 @@ Route::get('add', function () {
 });
 
 Route::get('test', function () {
-	$imageURL = 'https://tienich.xyz/files/images/blog/5c72b16b70356-33364927_117543379126709_6905426441161146368_o.jpg';
-	$parts = explode('.', $imageURL);
-	$extension = '';
-	if ($parts && count($parts) > 0) {
-		$extension = $parts[count($parts) - 1];
-	}
-	if ($extension != 'jpg' && $extension != 'png') {
-		return false;
-	}
-	
-    $curlGetImage = curl_init($imageURL);
-    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.'.$extension;
-//    $fileName = rand(0, 10000) . '.png';
-    $fp = fopen($fileName, 'w+');
-    //curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
-    curl_setopt($curlGetImage, CURLOPT_FILE, $fp);
-    curl_setopt($curlGetImage, CURLOPT_HEADER, 0);
-    curl_exec($curlGetImage);
-    curl_close($curlGetImage);
-    fclose($fp);
-
-    // Nếu cần ghi text thì ghi lên và ghi đè biến $fileName, bên dưới sẽ gọi hàm unlink để xóa ảnh đi
-	$text = "haha";
-    if ($text != null) {
-        $fileName = writeTextToImage($fileName, $text);
+    $check = checkCookieJoinedGroup("dpr=1.75;wd=2195x1093;datr=_-0rXxRS8lA7RaNFB3TO3zRI;locale=vi_VN;sb=qVwqX6vBbcNdmfDA9s8nM93j;spin=r.1002521727_b.trunk_t.1597465652_s.1_v.2_;c_user=100021067710865;xs=1%3Apfsj3Kqu1TjxSw%3A2%3A1597209680%3A10895%3A6243%3A%3AAcVGE9-vehjlKOtMob6i8CDmuts-y61G02JXL2IC4OE;fr=1Z57qNW2xLQ7ztNcu.AWXLIJCwXz0-LPtf9jS5aG2tBCA.BfKlyo.2O.F83.0.0.BfN3Dh.AWVc_1k3;presence=EDvF3EtimeF1597469044EuserFA21B21067710865A2EstateFDutF1597469044320CEchF_7bCC;", "772242516245607", "103.121.89.89:536");
+    if ($check) {
+        return "joined";
+    } else {
+        return "not";
     }
-	
-	exit($fileName);
 });

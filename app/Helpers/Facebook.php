@@ -433,17 +433,17 @@ function checkProxy($proxy)
 // Example: uploadImageToFacebook("https://www.upsieutoc.com/images/2020/07/31/592ccac0a949b39f058a297fd1faa38e.md.jpg", $cookie, $dtsg)
 function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy = null)
 {
-	$parts = explode('.', $imageURL);
-	$extension = '';
-	if ($parts && count($parts) > 0) {
-		$extension = $parts[count($parts) - 1];
-	}
-	if ($extension != 'jpg' && $extension != 'png') {
-		return false;
-	}
-	
+    $parts = explode('.', $imageURL);
+    $extension = '';
+    if ($parts && count($parts) > 0) {
+        $extension = $parts[count($parts) - 1];
+    }
+    if ($extension != 'jpg' && $extension != 'png') {
+        return false;
+    }
+
     $curlGetImage = curl_init($imageURL);
-    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.'.$extension;
+    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.' . $extension;
 //    $fileName = rand(0, 10000) . '.png';
     $fp = fopen($fileName, 'w+');
     //curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
@@ -499,11 +499,12 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     }
 }
 
-function checkCookieJoinedGroup($cookie, $groupID, $proxy = null) {
+function checkCookieJoinedGroup($cookie, $groupID, $proxy = null)
+{
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://mbasic.facebook.com/groups/".$groupID,
+        CURLOPT_URL => "https://mbasic.facebook.com/groups/" . $groupID,
         CURLOPT_PROXY => $proxy,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
@@ -523,14 +524,13 @@ function checkCookieJoinedGroup($cookie, $groupID, $proxy = null) {
             "sec-fetch-user: ?1",
             "sec-fetch-dest: document",
             "accept-language: vi,vi-VN;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",
-            "cookie: ".$cookie
+            "cookie: " . $cookie
         ),
     ));
 
     $response = curl_exec($curl);
-
     curl_close($curl);
-    if (preg_match("/group\/join\/\?group_id/", $response)) {
+    if (!preg_match("/group\/join\/\?group_id/", $response)) {
         return true;
     } else {
         return false;
