@@ -65,7 +65,8 @@
                                             <label class="col-sm-8 col-form-label">Mỗi lần like cách nhau</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="formData.reaction_frequency">
-                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{ minutes }} phút
+                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{
+                                                        minutes }} phút
                                                     </option>
                                                 </select>
                                             </div>
@@ -104,7 +105,8 @@
                                             <label class="col-sm-8 col-form-label">Mỗi lần comment cách nhau</label>
                                             <div class="col-sm-12">
                                                 <select class="form-control" v-model="formData.comment_frequency">
-                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{ minutes }} phút
+                                                    <option v-for="minutes in 60" :value="minutes" :key="minutes">{{
+                                                        minutes }} phút
                                                     </option>
                                                 </select>
                                             </div>
@@ -142,14 +144,27 @@
                                         </div>
                                     </div>
 
+                                    <div class="form-group row" v-if="comment_use_image">
+                                        <label class="col-sm-2 col-form-label">Ghi tên chủ post lên ảnh</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control"
+                                                    v-model="formData.write_post_owner_name_to_image">
+                                                <option :value=true>Bật</option>
+                                                <option :value=false>Tắt</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group row" v-if="comment_use_sticker">
                                         <label class="col-sm-2 col-form-label">Sticker để comment</label>
                                         <div class="col-sm-10">
                                             <div class="input-group input-group-sm">
                                                 <select class="form-control"
                                                         v-model="formData.comment_sticker_collection">
-                                                    <option v-for="(sticker_collection, s_index) in sticker_collections_id" :key="s_index"
-                                                            :value="sticker_collection.id">{{ sticker_collection.name
+                                                    <option
+                                                        v-for="(sticker_collection, s_index) in sticker_collections_id"
+                                                        :key="s_index"
+                                                        :value="sticker_collection.id">{{ sticker_collection.name
                                                         }}
                                                     </option>
                                                 </select>
@@ -193,20 +208,31 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                     <div class="col-sm-2">&nbsp;</div>
                                     <div class="col-sm-5">
                                         <label>
-                                            <input type="checkbox" v-model="formData.white_list_comment_on" />
+                                            <input type="checkbox" v-model="formData.white_list_comment_on"/>
                                             Bật auto comment
                                         </label>
                                     </div>
                                     <div class="col-sm-5">
                                         <label>
-                                            <input type="checkbox" v-model="formData.white_list_reaction_on" />
+                                            <input type="checkbox" v-model="formData.white_list_reaction_on"/>
                                             Bật thả reaction
                                         </label>
+                                    </div>
+                                    <div class="col-sm-12 row">
+                                        <label class="col-sm-2 col-form-label">Chế độ tương tác Whitelist</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control"
+                                                    v-model="formData.white_list_run_mode">
+                                                <option value="asap">Ngay khi có post mới</option>
+                                                <option value="mixed">Giãn cách theo thiết lập ở trên</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label">Whitelist Group (ưu tiên tương tác trong các group này)</label>
+                                    <label class="col-sm-2 col-form-label">Whitelist Group (ưu tiên tương tác trong các
+                                        group này)</label>
                                     <div class="col-sm-10">
                                     <textarea class="form-control" rows="3" v-model="formData.white_group"
                                               placeholder="Mỗi Group ID một dòng"></textarea>
@@ -214,15 +240,25 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                                     <div class="col-sm-2">&nbsp;</div>
                                     <div class="col-sm-5">
                                         <label>
-                                            <input type="checkbox" v-model="formData.white_group_comment_on" />
+                                            <input type="checkbox" v-model="formData.white_group_comment_on"/>
                                             Bật auto comment
                                         </label>
                                     </div>
                                     <div class="col-sm-5">
                                         <label>
-                                            <input type="checkbox" v-model="formData.white_group_reaction_on" />
+                                            <input type="checkbox" v-model="formData.white_group_reaction_on"/>
                                             Bật thả reaction
                                         </label>
+                                    </div>
+                                    <div class="col-sm-12 row">
+                                        <label class="col-sm-2 col-form-label">Chế độ tương tác White Group</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control"
+                                                    v-model="formData.white_group_run_mode">
+                                                <option value="asap">Ngay khi có post mới</option>
+                                                <option value="mixed">Giãn cách theo thiết lập ở trên</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -280,6 +316,7 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
                     comment_on: false,
                     comment_frequency: 5,
                     comment_image_url: '',
+                    write_post_owner_name_to_image: false,
                     comment_sticker_collection: '',
                     comment_content: '',
 
@@ -289,10 +326,12 @@ Lệnh: {icon} = random emoij | {name} = tên facebook chủ post | {ngay} {than
 
                     black_list: '',
                     white_list: '',
+                    white_list_run_mode: 'asap',
                     white_list_comment_on: false,
                     white_list_reaction_on: true,
 
                     white_group: '',
+                    white_group_run_mode: 'asap',
                     white_group_comment_on: false,
                     white_group_reaction_on: true,
                 },

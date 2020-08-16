@@ -185,7 +185,7 @@ class BotFacebook implements ShouldQueue
                     // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
                     if (!$foundTime) {
                         $time = Carbon::tomorrow();
-                        $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hours[0],  str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
+                        $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
                     }
                 }
             }
@@ -211,10 +211,14 @@ class BotFacebook implements ShouldQueue
                 $photoUrls = explode("\n", $bot->comment_image_url);
                 // Set mặc định 1 cái ảnh
                 $commentPhoto = "https://www.nicepng.com/png/detail/47-476266_free-png-3d-facebook-logo-png-icon-png.png";
+                $textWriteOnImage = null;
                 if (count($photoUrls) > 0) {
                     $commentPhoto = $photoUrls[rand(0, count($photoUrls) - 1)];
                 }
-                $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $postOwnerName, $bot->proxy);
+                if ($bot->write_post_owner_name_to_image) {
+                    $textWriteOnImage = $postOwnerName;
+                }
+                $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $textWriteOnImage, $bot->proxy);
             }
 
             // Build nội dung comment
@@ -253,7 +257,7 @@ class BotFacebook implements ShouldQueue
                     foreach ($hours as $hour) {
                         if ($hour > $tempHour) {
                             $time = Carbon::now();
-                            $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hour,  str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
+                            $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hour, str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
                             $foundTime = true;
                             break;
                         }
@@ -262,7 +266,7 @@ class BotFacebook implements ShouldQueue
                     // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
                     if (!$foundTime) {
                         $time = Carbon::tomorrow();
-                        $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hours[0],  str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
+                        $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
                     }
                 }
             }

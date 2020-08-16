@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Bot;
 use App\Models\BotLog;
+use App\Models\SystemProxies;
 use App\Models\WhiteListIds;
 use App\Models\WhiteGroupIds;
 use Illuminate\Http\Request;
@@ -17,7 +18,6 @@ class BotController extends Controller
         $validator = Validator::make($request->all(), [
             'cookie' => 'required',
             'name' => 'required',
-            'proxy' => 'required',
             'comment_on' => 'required|boolean',
             'reaction_on' => 'required|boolean',
             'run_time' => 'required',
@@ -30,22 +30,35 @@ class BotController extends Controller
                 'status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
         }
 
+        // Nếu không truyền vào proxy thì lấy 1 proxy trong DB ra phát cho nick
+        $needGetProxyFromDB = false;
+        if (!isset($request->proxy)) {
+            $needGetProxyFromDB = true;
+            $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
+            if (!$getProxyFromDB) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
+                ]);
+            }
+            $request['proxy'] = $getProxyFromDB->proxy;
+        }
 
-        // Kiểm tra proxy hoạt động ok không
+        // Kiểm tra proxy có live không
         $tryTestProxy = 0;
         do {
             if ($tryTestProxy >= 3) {
+                if ($needGetProxyFromDB == true) {
+                    SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
+                }
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Proxy không hoạt động, vui lòng kiểm tra lại!'
+                    'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
                 ]);
             }
             $checkProxy = checkProxy($request->proxy);
             $tryTestProxy++;
         } while ($checkProxy == false);
-
-        // TODO Kiểm tra cookie hoạt động OK không
-
 
         // Xóa kí tự \r ở dấu xuống dòng
         if ($request->comment_content) {

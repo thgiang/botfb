@@ -45,12 +45,12 @@ class CrawlNewGroupPost implements ShouldQueue
         foreach ($whiteIds AS $white) {
             $bot = Bot::where('id', $white->bot_id)->first();
 			// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
-			if ($bot->white_group_run_mode == 'mixed') {
+			if (isset($bot->white_group_run_mode) && $bot->white_group_run_mode == 'mixed') {
 				if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
 					continue;
 				}
 			}
-			
+
             if ($bot) {
                 if (checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
                     $foundBot = $bot;
@@ -85,7 +85,7 @@ class CrawlNewGroupPost implements ShouldQueue
 					continue;
 				}
 			}
-			
+
             $countPost = 0;
             foreach ($posts as $post) {
                 // Nếu tương tác đủ 2 bài rồi thì break; mỗi bot chỉ cần thế thôi
