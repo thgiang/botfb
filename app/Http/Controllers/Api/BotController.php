@@ -36,6 +36,7 @@ class BotController extends Controller
             $needGetProxyFromDB = true;
             $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
             if (!$getProxyFromDB) {
+                sendMessageTelegram('Kho proxy bị hết');
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
