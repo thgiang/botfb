@@ -32,7 +32,7 @@ class BotController extends Controller
 
         // Nếu không truyền vào proxy thì lấy 1 proxy trong DB ra phát cho nick
         $needGetProxyFromDB = false;
-        if (!isset($request->proxy)) {
+        if (!isset($request->proxy) || empty($request->proxy)) {
             $needGetProxyFromDB = true;
             $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
             if (!$getProxyFromDB) {
@@ -99,11 +99,13 @@ class BotController extends Controller
                 ]);
             }
 
-            foreach ($bot as $key => $value) {
-                if (isset($request->{$key})) {
-                    $bot->{$key} = $request->{$key};
-                }
-            }
+//            foreach ($bot as $key => $value) {
+////                echo $value.'<br>';
+////                if (isset($request->{$key})) {
+////                    $bot->{$key} = $request->{$key};
+////                }
+//            }
+            $bot->update($request->all());
             $bot->count_error = 0;
             $bot->save();
 
@@ -134,6 +136,11 @@ class BotController extends Controller
                     $newWhiteGroup->fb_id = $fbId;
                     $newWhiteGroup->save();
                 }
+            }
+
+            if (isset($getProxyFromDB) && $getProxyFromDB) {
+                $getProxyFromDB->bot_id = $bot->id;
+                $getProxyFromDB->save();
             }
 
             return response()->json([
