@@ -230,18 +230,16 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
             }
         }
     } else {
-        preg_match_all("/ft_ent_identifier=([0-9]+)&amp;/", $response, $matches);
-        if (isset($matches[1])) {
-            $listPostIDs = array_values(array_unique($matches[1]));
-            foreach ($listPostIDs as $key => $postID) {
-                preg_match("/%3Atop_level_post_id.$postID%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $postOwnerID);
-                if (isset($postOwnerID[1])) {
-                    $postOwnerID = $postOwnerID[1];
-                    array_push($posts, (object)[
-                        "post_id" => $postID,
-                        "owner_id" => $postOwnerID
-                    ]);
-                }
+        preg_match_all("/%3Atop_level_post_id.([0-9]+)%3Acontent_owner_id_new.([0-9]+)%3A/", $response, $matches);
+        $listPostOwnerIDs = array_values(array_unique($matches[2]));
+        $listPostIDs = array_values(array_unique($matches[1]));
+        foreach ($listPostOwnerIDs as $key => $postOwnerID) {
+            if (isset($listPostIDs[$key])) {
+                $postID = $listPostIDs[$key];
+                array_push($listIDs, (object)[
+                    "post_id" => $postID,
+                    "owner_id" => $postOwnerID
+                ]);
             }
         }
     }
@@ -603,7 +601,7 @@ function DoShortCode($str, $extraData = array())
     if (preg_match("/{icon}/", $str)) {
         $parts = explode('{icon}', $str);
         $str = "";
-        for ($i = 0; $i < count($parts) - 1; $i++) {
+        for ($i = 0; $i < count($parts); $i++) {
             $str .= $parts[$i];
             if ($i < count($parts) - 1) {
                 $str .= RandomEmotion();

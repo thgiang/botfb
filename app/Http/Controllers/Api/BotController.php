@@ -69,23 +69,25 @@ class BotController extends Controller
         // Chuyển run_time thành array :D
         $request['run_time'] = '[' . $request->run_time . ']';
 
+        // Lấy FB UID từ cookie
+        preg_match("/c_user=([0-9]+);/", $request->cookie, $fbBotID);
+        if (isset($fbBotID[1])) {
+            $fbBotID = $fbBotID[1];
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cookie không hợp lệ: Thiếu "c_user", vui lòng thử lại!'
+            ]);
+        }
+
         // Lưu bot
         if (!$request->bot_id) {
-            // Nếu là thêm mới, phải check thêm bot này đã từng được thêm chưa
-            preg_match("/c_user=([0-9]+);/", $request->cookie, $fbBotID);
-            if (isset($fbBotID[1])) {
-                $fbBotID = $fbBotID[1];
-                $bot = Bot::where('facebook_uid', $fbBotID)->orWhere('cookie', $request->cookie)->first();
-                if ($bot) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Cookie bạn vừa nhập đã tồn tại trong hệ thống, vui lòng kiểm tra lại!'
-                    ]);
-                }
-            } else {
+            // Nếu là thêm mới, phải check xem bot này đã từng được thêm chưa
+            $bot = Bot::where('facebook_uid', $fbBotID)->orWhere('cookie', $request->cookie)->first();
+            if ($bot) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Cookie không hợp lệ: Thiếu "c_user", vui lòng thử lại!'
+                    'message' => 'Cookie bạn vừa nhập đã tồn tại trong hệ thống, vui lòng kiểm tra lại!'
                 ]);
             }
 
@@ -99,6 +101,14 @@ class BotController extends Controller
                 ]);
             }
 
+            // Nếu là update, phải check xem UID FB của cookie mới thêm có trùng với UID FB của cookie cũ không
+            if ($bot->facebook_uid != $fbBotID) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cookie cần cập nhật phải cùng Facebook UID với cookie cũ!'
+                ]);
+            }
+
 //            foreach ($bot as $key => $value) {
 ////                echo $value.'<br>';
 ////                if (isset($request->{$key})) {
@@ -106,7 +116,8 @@ class BotController extends Controller
 ////                }
 //            }
             $bot->update($request->all());
-            $bot->count_error = 0;
+            $bot->count_error = isset($request->count_error) ? $request->count_error : 0;
+            $bot->error_log = isset($request->error_log) ? $request->count_error : null;
             $bot->save();
 
             WhiteListIds::where('bot_id', $request->bot_id)->delete();
@@ -158,10 +169,11 @@ class BotController extends Controller
 
     public function index(Request $request)
     {
+        $limit = isset($request->limit) ? $request->limit : 10;
         if (isset($request->bot_id)) {
-            $bots = Bot::where('id', $request->bot_id)->paginate(10);
+            $bots = Bot::where('id', $request->bot_id)->paginate($limit)->appends(request()->except('page'));
         } else {
-            $bots = Bot::paginate(10);
+            $bots = Bot::paginate($limit);
         }
         if ($bots) {
             return response()->json([
@@ -179,12 +191,20 @@ class BotController extends Controller
 
     public function delete(Request $request)
     {
-        $bot = Bot::where('id', $request->id)->delete();
+        $bot = Bot::where('id', $request->id)->first();
         if ($bot) {
-            return response()->json([
-                'status' => 'success',
-                'message' => "Đã xóa bot ID " . $request->id
-            ]);
+            $delete = $bot->delete();
+            if ($delete) {
+                SystemProxies::where('bot_id', $bot->id)->update([
+                    'bot_id' => 0
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => "Đã xóa bot ID " . $request->id
+                ]);
+            }
+
         }
 
         return response()->json([
@@ -195,10 +215,11 @@ class BotController extends Controller
 
     public function logs(Request $request)
     {
+        $limit = isset($request->limit) ? $request->limit : 10;
         if (isset($request->bot_id)) {
-            $botLogs = BotLog::where('bot_id', $request->bot_id)->orWhere('facebook_uid', $request->bot_id)->orderBy('updated_at', 'DESC')->paginate(10);
+            $botLogs = BotLog::where('bot_id', $request->bot_id)->orderBy('updated_at', 'DESC')->paginate($limit)->appends(request()->except('page'));
         } else {
-            $botLogs = BotLog::orderBy('updated_at', 'DESC')->paginate(10);
+            $botLogs = BotLog::orderBy('updated_at', 'DESC')->paginate($limit);
         }
 
         if ($botLogs) {

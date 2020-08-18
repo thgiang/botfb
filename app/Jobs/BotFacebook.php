@@ -227,8 +227,14 @@ class BotFacebook implements ShouldQueue
             if (count($comments) > 0) {
                 $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)], array('name' => $postOwnerName));
             }
-            if (empty($commentContent)) {
-                $commentContent = RandomComment();
+            if (empty($commentContent) && empty($photoId) && empty($stickerId)) {
+				$bot->error_log = 'Bạn ko đc để trống cả 3 thứ: Nội dung comment, ảnh và sticker';
+				$bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;;
+				$bot->next_reaction_time = $bot->next_reaction_time + config('bot.try_news_feed_after') * 60;;
+				$bot->count_error++;
+				$bot->save();
+				return;
+                //$commentContent = RandomComment();
             }
 
             // Gửi comment
