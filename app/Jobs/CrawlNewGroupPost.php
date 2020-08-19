@@ -18,6 +18,8 @@ class CrawlNewGroupPost implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+	public $timeout = 50;
+
     private $fb_id;
 
     /**

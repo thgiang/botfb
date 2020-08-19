@@ -30,36 +30,40 @@ class BotController extends Controller
                 'status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
         }
 
-        // Nếu không truyền vào proxy thì lấy 1 proxy trong DB ra phát cho nick
-        $needGetProxyFromDB = false;
-        if (!isset($request->proxy) || empty($request->proxy)) {
-            $needGetProxyFromDB = true;
-            $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
-            if (!$getProxyFromDB) {
-                sendMessageTelegram('Kho proxy bị hết');
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
-                ]);
+        // Nếu là thêm nick mới thì tiến hành phát proxy cho nick
+        if (!isset($request->bot_id)) {
+            // Nếu không truyền vào proxy thì lấy 1 proxy trong DB ra phát cho nick
+            $needGetProxyFromDB = false;
+            if (!isset($request->proxy) || empty($request->proxy)) {
+                $needGetProxyFromDB = true;
+                $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
+                if (!$getProxyFromDB) {
+                    sendMessageTelegram('Kho proxy bị hết');
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
+                    ]);
+                }
+                $request['proxy'] = $getProxyFromDB->proxy;
             }
-            $request['proxy'] = $getProxyFromDB->proxy;
+
+            // Kiểm tra proxy có live không
+            $tryTestProxy = 0;
+            do {
+                if ($tryTestProxy >= 3) {
+                    if ($needGetProxyFromDB == true) {
+                        SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
+                    }
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
+                    ]);
+                }
+                $checkProxy = checkProxy($request->proxy);
+                $tryTestProxy++;
+            } while ($checkProxy == false);
         }
 
-        // Kiểm tra proxy có live không
-        $tryTestProxy = 0;
-        do {
-            if ($tryTestProxy >= 3) {
-                if ($needGetProxyFromDB == true) {
-                    SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
-                }
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
-                ]);
-            }
-            $checkProxy = checkProxy($request->proxy);
-            $tryTestProxy++;
-        } while ($checkProxy == false);
 
         // Xóa kí tự \r ở dấu xuống dòng
         if ($request->comment_content) {
