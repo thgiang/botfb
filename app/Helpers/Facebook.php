@@ -236,7 +236,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
         foreach ($listPostOwnerIDs as $key => $postOwnerID) {
             if (isset($listPostIDs[$key])) {
                 $postID = $listPostIDs[$key];
-                array_push($listIDs, (object)[
+                array_push($posts, (object)[
                     "post_id" => $postID,
                     "owner_id" => $postOwnerID
                 ]);

@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Log;
 class BotFacebook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+	
+	public $timeout = 50;
+	
     private $botId;
     private $postId;
     private $requestSource;
@@ -134,9 +136,19 @@ class BotFacebook implements ShouldQueue
                 $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy, $bot->bot_target, $ignoreFbIds, $ignoreFBPostIds);
                 if (is_array($posts) && !empty($posts)) {
                     $newsFeedIsEmpty = false;
-                    $post = $posts[rand(0, count($posts) - 1)];
-                    $postId = $post->post_id;
-
+					// $post = $posts[rand(0, count($posts) - 1)];
+					// Éo hiểu sao thi thoảng lỗi  Undefined offset: 0 nên phải thêm mấy dòng code bên dưới
+					$randomIndex = rand(0, count($posts) - 1);
+					if (isset($posts[$randomIndex]) && !empty($posts[$randomIndex])) {
+						$post = $posts[$randomIndex];
+						$postId = $post->post_id;
+					} else {
+						foreach ($posts AS $post) {
+							if (!empty($post->id)) {
+								$postId = $post->post_id;
+							}
+						}
+					}
                 }
             } while ($postId == '' || in_array($postId, $ignoreFBPostIds));
         }
@@ -228,12 +240,12 @@ class BotFacebook implements ShouldQueue
                 $commentContent = DoShortCode($comments[rand(0, count($comments) - 1)], array('name' => $postOwnerName));
             }
             if (empty($commentContent) && empty($photoId) && empty($stickerId)) {
-				$bot->error_log = 'Bạn ko đc để trống cả 3 thứ: Nội dung comment, ảnh và sticker';
-				$bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;;
-				$bot->next_reaction_time = $bot->next_reaction_time + config('bot.try_news_feed_after') * 60;;
-				$bot->count_error++;
-				$bot->save();
-				return;
+                $bot->error_log = 'Bạn ko đc để trống cả 3 thứ: Nội dung comment, ảnh và sticker';
+                $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;;
+                $bot->next_reaction_time = $bot->next_reaction_time + config('bot.try_news_feed_after') * 60;;
+                $bot->count_error++;
+                $bot->save();
+                return;
                 //$commentContent = RandomComment();
             }
 
