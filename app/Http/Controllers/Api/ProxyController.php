@@ -26,6 +26,7 @@ class ProxyController extends Controller
                         'proxy' => $getProxy->host . ':' . $getProxy->port
                     ],
                     [
+                        'is_live' => true,
                         'expired' => $getProxy->unixtime_end
                     ]);
                 echo 'Update thành công ' . $getProxy->host . '<br>';
@@ -137,5 +138,20 @@ class ProxyController extends Controller
 
         curl_close($curl);
         return json_decode($response);
+    }
+
+    public function replaceProxy($proxyDie, $botID)
+    {
+        // Chuyển proxy bị die về kho, để trạng thái thành die
+        SystemProxies::where('proxy', $proxyDie)->update(['is_live' => false, 'bot_id' => 0]);
+
+        // Lấy 1 proxy mới
+        $getNewProxy = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
+        if ($getNewProxy) {
+            $getNewProxy->update(['bot_id' => $botID]);
+            return $getNewProxy->proxy;
+        } else {
+            return false;
+        }
     }
 }

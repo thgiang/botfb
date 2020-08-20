@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\Api\ProxyController;
 use App\Models\Bot;
 use App\Models\BotLog;
 use Carbon\Carbon;
@@ -16,9 +17,9 @@ use App\Helpers\ZHelper;
 class BotFacebook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-	
-	public $timeout = 50;
-	
+
+    public $timeout = 50;
+
     private $botId;
     private $postId;
     private $requestSource;
@@ -47,6 +48,7 @@ class BotFacebook implements ShouldQueue
      */
     public function handle()
     {
+        file_put_contents('bog_log.txt', 'BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn .' . $this->requestSource . ' extradata .' . json_encode($this->extraData) . "\n", FILE_APPEND);
         $bot = Bot::where('id', $this->botId)->first();
         if (!$bot) {
             return;
@@ -73,9 +75,20 @@ class BotFacebook implements ShouldQueue
             $tryTestProxy = 0;
             do {
                 if ($tryTestProxy >= 3) {
-                    $bot->count_error = config('bot.max_try_time');
-                    $bot->error_log = 'Proxy của tài khoản bị die. Tài khoản bị dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
-                    $bot->save();
+                    $proxyController = new ProxyController();
+                    sendMessageTelegram('Proxy của tài khoản bị die, thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
+                    $replaceProxy = $proxyController->replaceProxy($bot->proxy, $bot->id);
+
+                    if ($replaceProxy == false) {
+                        $bot->count_error = config('bot.max_try_time');
+                        $bot->error_log = 'Proxy của tài khoản bị die, không lấy được proxy mới, tài khoản dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
+                        $bot->save();
+                        sendMessageTelegram('Proxy của bot ' . $bot->id . ' bị die, yêu cầu thay mới nhưng kho hết proxy');
+                    } else {
+                        $bot->error_log = 'Proxy của tài khoản bị die, đã thay proxy mới lúc ' . date("d/m/Y H:i:s") . '';
+                        $bot->proxy = $replaceProxy;
+                        $bot->save();
+                    }
 
                     Log::error("Bot ID " . $bot->id . " Proxy bị die!");
                     return;
@@ -137,19 +150,19 @@ class BotFacebook implements ShouldQueue
                 $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy, $bot->bot_target, $ignoreFbIds, $ignoreFBPostIds);
                 if (is_array($posts) && !empty($posts)) {
                     $newsFeedIsEmpty = false;
-					// $post = $posts[rand(0, count($posts) - 1)];
-					// Éo hiểu sao thi thoảng lỗi  Undefined offset: 0 nên phải thêm mấy dòng code bên dưới
-					$randomIndex = rand(0, count($posts) - 1);
-					if (isset($posts[$randomIndex]) && !empty($posts[$randomIndex])) {
-						$post = $posts[$randomIndex];
-						$postId = $post->post_id;
-					} else {
-						foreach ($posts AS $post) {
-							if (!empty($post->id)) {
-								$postId = $post->post_id;
-							}
-						}
-					}
+                    // $post = $posts[rand(0, count($posts) - 1)];
+                    // Éo hiểu sao thi thoảng lỗi  Undefined offset: 0 nên phải thêm mấy dòng code bên dưới
+                    $randomIndex = rand(0, count($posts) - 1);
+                    if (isset($posts[$randomIndex]) && !empty($posts[$randomIndex])) {
+                        $post = $posts[$randomIndex];
+                        $postId = $post->post_id;
+                    } else {
+                        foreach ($posts as $post) {
+                            if (!empty($post->id)) {
+                                $postId = $post->post_id;
+                            }
+                        }
+                    }
                 }
             } while ($postId == '' || in_array($postId, $ignoreFBPostIds));
         }
@@ -179,7 +192,8 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần reaction tiếp theo
-            $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
+            //$bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
+            $bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_reaction_time = ZHelper::NearestTime($bot->next_reaction_time, $hours);
@@ -248,7 +262,8 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần comment tiếp theo
-            $bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
+            //$bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
+            $bot->next_comment_time = time() + $bot->comment_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_comment_time = ZHelper::NearestTime($bot->next_comment_time, $hours);

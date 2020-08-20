@@ -185,7 +185,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
 
     $response = curl_exec($curl);
     curl_close($curl);
-    // echo $response;
+//     echo $response;
     $posts = [];
 
     if ($postOwnerType == 'group') {
@@ -235,7 +235,7 @@ function getPostsFromNewFeed2($cookie, $proxy = null, $postOwnerType = 'all', $i
         $listPostIDs = array_values(array_unique($matches[1]));
         foreach ($listPostOwnerIDs as $key => $postOwnerID) {
             if (isset($listPostIDs[$key])) {
-                $postID = $listPostIDs[$key];
+                $postID = $listPostIDs[$key];;
                 array_push($posts, (object)[
                     "post_id" => $postID,
                     "owner_id" => $postOwnerID

@@ -30,26 +30,27 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function testJob() {
-		/*
-		$this->fb_id = '2139567299590802';
-		// Lấy 1 con bot đang coi group này là white_group với điều kiện nó phải join rồi để quét đc bài mới
+    public function testJob()
+    {
+        /*
+        $this->fb_id = '2139567299590802';
+        // Lấy 1 con bot đang coi group này là white_group với điều kiện nó phải join rồi để quét đc bài mới
         $whiteIds = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
 
         $foundBot = null;
         $logs = "";
         foreach ($whiteIds AS $white) {
             $bot = Bot::where('id', $white->bot_id)->first();
-			// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
-			if (isset($bot->white_group_run_mode) && $bot->white_group_run_mode == 'mixed') {
-				if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
-					continue;
-				}
-			}
+            // Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
+            if (isset($bot->white_group_run_mode) && $bot->white_group_run_mode == 'mixed') {
+                if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+                    continue;
+                }
+            }
 
             if ($bot) {
                 if (checkCookieJoinedGroup($bot->cookie, $this->fb_id, $bot->proxy)) {
-					echo 'Đã join';
+                    echo 'Đã join';
                     $foundBot = $bot;
                     break;
                 } else {
@@ -75,14 +76,14 @@ class HomeController extends Controller
                 continue;
             }
 
-			// Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
-			if ($bot->white_group_run_mode == 'mixed') {
-				if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
-					echo 'Giờ comment tiếp theo: ';
-					echo date('d/m/Y H:i:s', $bot->next_comment_time);
-					continue;
-				}
-			}
+            // Nếu bot này ở chế độ chạy cùng với tương tác dạo khác, thì xét next_comment_time, next_reaction_time xem đã tới giờ chưa tránh chạy liên tục
+            if ($bot->white_group_run_mode == 'mixed') {
+                if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+                    echo 'Giờ comment tiếp theo: ';
+                    echo date('d/m/Y H:i:s', $bot->next_comment_time);
+                    continue;
+                }
+            }
 
             $countPost = 0;
             foreach ($posts as $post) {
@@ -94,28 +95,29 @@ class HomeController extends Controller
                 $botLog = BotLog::where('bot_fid', $bot->facebook_uid)->where('post_id', $post->post_id)->first();
                 if (!$botLog) {
                     echo 'Gọi BOT tương tác: '. $bot->id .' với bài viết '.$post->post_id;
-					echo '<br>';
-					echo 'Chi tiết bài viết: ';
-					echo '<br>';
-					print_r($post);
-				
-					BotFacebook::dispatch($bot->id, $post->post_id, 'white_group', (array)$post);
+                    echo '<br>';
+                    echo 'Chi tiết bài viết: ';
+                    echo '<br>';
+                    print_r($post);
+
+                    BotFacebook::dispatch($bot->id, $post->post_id, 'white_group', (array)$post);
                     $countPost++;
                 }
             }
         }
-		*/
-		$bot = Bot::where('id', 25)->first();
-		 $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy);
-		 
-		 $comments = explode("\n", $bot->comment_content);
-            if (count($comments) > 0) {
-				$noidung = $comments[rand(0, count($comments) - 1)];
-				echo $noidung.'<br>';
-                $commentContent = DoShortCode($noidung, array('name' => 'Giang'));
-            }
-			echo $commentContent;
-			
-			exit();
+        */
+        $bot = Bot::where('id', 26)->first();
+        $posts = getPostsFromNewFeed2($bot->cookie, $bot->proxy);
+        print_r($posts);
+        return $bot->cookie."<br>".$bot->proxy;
+        $comments = explode("\n", $bot->comment_content);
+        if (count($comments) > 0) {
+            $noidung = $comments[rand(0, count($comments) - 1)];
+            echo $noidung . '<br>';
+            $commentContent = DoShortCode($noidung, array('name' => 'Giang'));
+        }
+        echo $commentContent;
+
+        exit();
     }
 }

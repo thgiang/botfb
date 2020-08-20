@@ -31,11 +31,11 @@ class BotController extends Controller
                 'status' => 'error', 'message' => $validator->errors()->first(), 'errors' => [$validator->getMessageBag()->toArray()]]);
         }
 
-        // Nếu là thêm nick mới thì tiến hành phát proxy cho nick
-        if (!isset($request->bot_id)) {
-            // Nếu không truyền vào proxy thì lấy 1 proxy trong DB ra phát cho nick
-            $needGetProxyFromDB = false;
-            if (!isset($request->proxy) || empty($request->proxy)) {
+        // Nếu không truyền vào proxy và là thao tác thêm nick mới thì lấy 1 proxy trong DB ra phát cho nick
+        $needGetProxyFromDB = false;
+        $needCheckProxy = true;
+        if (!isset($request->proxy) || empty($request->proxy)) {
+            if (!isset($request->bot_id)) {
                 $needGetProxyFromDB = true;
                 $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
                 if (!$getProxyFromDB) {
@@ -46,25 +46,29 @@ class BotController extends Controller
                     ]);
                 }
                 $request['proxy'] = $getProxyFromDB->proxy;
+            } else {
+                // Nếu là update thông tin nick, mà proxy truyền vào rỗng thì xóa nó đi để khỏi update vào DB
+                unset($request['proxy']);
+                // Set $needCheckProxy thành true thì bên dưới sẽ không check proxy live/die nữa
+                $needCheckProxy = false;
             }
-
-            // Kiểm tra proxy có live không
-            $tryTestProxy = 0;
-            do {
-                if ($tryTestProxy >= 3) {
-                    if ($needGetProxyFromDB == true) {
-                        SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
-                    }
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
-                    ]);
-                }
-                $checkProxy = checkProxy($request->proxy);
-                $tryTestProxy++;
-            } while ($checkProxy == false);
         }
 
+        // Kiểm tra proxy có live không
+        $tryTestProxy = 0;
+        do {
+            if ($tryTestProxy >= 3) {
+                if ($needGetProxyFromDB == true) {
+                    SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
+                }
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
+                ]);
+            }
+            $checkProxy = checkProxy($request->proxy);
+            $tryTestProxy++;
+        } while ($checkProxy == false && $needCheckProxy == true);
 
         // Xóa kí tự \r ở dấu xuống dòng
         if ($request->comment_content) {
@@ -121,16 +125,16 @@ class BotController extends Controller
 ////                }
 //            }
 
-			// TODO: Xem lại đoạn lưu này để đỡ phải query 2 lần
+            // TODO: Xem lại đoạn lưu này để đỡ phải query 2 lần
             $bot->update($request->all());
-			
+
             $bot->count_error = isset($request->count_error) ? $request->count_error : 0;
             $bot->error_log = isset($request->error_log) ? $request->count_error : null;
-			$hours = @json_decode($bot->run_time);
-			if ($hours && is_array($hours) && !empty($hours)) {
-				$bot->next_reaction_time = ZHelper::NearestTime(time(), $hours);
-				$bot->next_comment_time = ZHelper::NearestTime(time(), $hours);
-			}
+            $hours = @json_decode($bot->run_time);
+            if ($hours && is_array($hours) && !empty($hours)) {
+                $bot->next_reaction_time = ZHelper::NearestTime(time(), $hours);
+                $bot->next_comment_time = ZHelper::NearestTime(time(), $hours);
+            }
             $bot->save();
 
             WhiteListIds::where('bot_id', $request->bot_id)->delete();
