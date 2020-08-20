@@ -134,9 +134,51 @@ Route::get('test', function () {
 100053838404123|6242029109|x-referer=eyJyIjoiL2xvZ2luL3NhdmUtZGV2aWNlLz9sb2dpbl9zb3VyY2U9YWNjb3VudF9jcmVhdGlvbiZzb2Z0PWhqayIsImgiOiIvbG9naW4vc2F2ZS1kZXZpY2UvP2xvZ2luX3NvdXJjZT1hY2NvdW50X2NyZWF0aW9uJnNvZnQ9aGprIiwicyI6Im0ifQ%3D%3D; xs=25%3AxqQT7HwsBV66hQ%3A2%3A1595694022%3A-1%3A-1; c_user=100053838404123; wd=928x1718; m_pixel_ratio=1; fr=1FtwsTvWW5Ghu3ZFW.AWVpLxwHnWe_HmwHZCPOG9oJTYQ.BfHFtl.mx.AAA.0.0.BfHFvE.AWV7NQlE; sb=ZVscX-o0EvoNJbdZ88K3vSY5; datr=ZVscXxWpEhLRIPJpgpwoP4RJ
 100053664860835|5262399242|x-referer=eyJyIjoiL2xvZ2luL3NhdmUtZGV2aWNlLz9sb2dpbl9zb3VyY2U9YWNjb3VudF9jcmVhdGlvbiZzb2Z0PWhqayIsImgiOiIvbG9naW4vc2F2ZS1kZXZpY2UvP2xvZ2luX3NvdXJjZT1hY2NvdW50X2NyZWF0aW9uJnNvZnQ9aGprIiwicyI6Im0ifQ%3D%3D; xs=19%3Am17GG7SX4UtP6w%3A2%3A1595694022%3A-1%3A-1; c_user=100053664860835; wd=928x1718; m_pixel_ratio=1; fr=1huHrpbF19xpIQtF5.AWW3FTTrNRnSOw-qLXOd_CAR5N4.BfHFth.Lw.AAA.0.0.BfHFvD.AWUSTm3m; sb=YVscX-1QGXtfIpz_DKUJjfrt; datr=YVscX_CjUv6eVGFLWVSzuO_Z";
 
+
+    function watchLivestream($cookie, $userID, $fbDtsg, $liveStreamID)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://www.facebook.com/video/unified_cvc/",
+             CURLOPT_PROXY => "103.121.89.89:678",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('d' => '{"pps":{"m":false,"pf":0,"s":"playing","sa":0},"ps":{"m":false,"pf":3182,"s":"playing","sa":250183},"si":"ff2dcaf7474ef","so":"null::inline","vi":"' . $liveStreamID . '","tk":"MqtWu8bh8fi9lqY/nqGwODgy7pfSZk5qQI0BG4Aq91HP3y7DJW8zsMntznG6pVECLssOoOLfV+qeBhXF2dw8oA==","ls":true,"pc":true}', '__user' => $userID, '__a' => '1', '__dyn' => '7AgNeS4amaWxd2u6aJGi9FxqeCwKyaG5VayaheC3m2qdwIhEnz8nyUdUaofVUKbnyorxuF98ScDK7HzEeUG3yczobrCCx3U9468ObKcxu5od8txi4EG6Ehwj8mU8onwhqxW5o7Cul0Dxe6U8oa8lKEtxy5Voy6opG3t2odoKfzUC2OK3e6ogUkBzXwzwloObzoiAz8aLguAKlxfwzBzU-cBKm4U9898Gfxm7ovGcyGwOzV4ax3CDKi8wGxm4UGqfwRx6cK58gy898e8Wqexp2UtGezE4y8xa489o4-7GwIwKG2q4U4a4Hy8ky9o9o-7Eox2im1jxe3C4Umwso88cobElxm4E9ojwgrwmE', '__csr' => '	', '__req' => '31', '__beoa' => '0', '__pc' => 'PHASED:DEFAULT', 'dpr' => '1', '__ccg' => 'EXCELLENT', '__rev' => '1002544585', '__s' => '2hbwq3:fk6jia:h2vl8m', '__hsi' => '6863107021448675438-0', '__comet_req' => '0', 'fb_dtsg' => $fbDtsg, 'jazoest' => '22044', '__spin_r' => '1002544585', '__spin_b' => 'trunk', '__spin_t' => '1597941598'),
+            CURLOPT_HTTPHEADER => array(
+                "Host: www.facebook.com",
+                "Connection: keep-alive",
+                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+                "Viewport-Width: 1920",
+                "Accept: */*",
+                "Origin: https://www.facebook.com",
+                "Sec-Fetch-Site: same-origin",
+                "Sec-Fetch-Mode: cors",
+                "Sec-Fetch-Dest: empty",
+                "Referer: https://www.facebook.com/videos/" . $liveStreamID,
+                "Accept-Encoding: gzip, deflate, br",
+                "Accept-Language: en-US,en;q=0.9",
+                "Content-Type: multipart/form-data",
+                "Cookie: " . $cookie
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        echo $response;
+    }
+
     $ex1 = explode("\n", $listAcc);
     foreach ($ex1 as $accData) {
         $ex2 = explode("|", $accData);
-        echo $ex2[2] . '<br>';
+        $fbID = $ex2[0];
+        $cookie = $ex2[2];
+        echo $fbID . '<br>' . $cookie . '<br>';
     }
 });

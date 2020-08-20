@@ -36,12 +36,13 @@ function randomPic($dir = 'images')
 
 function writeTextToImage($originalImage, $text = "Hello")
 {
+	$path = public_path() . '/image_generator/';
     $img = LoadImage($originalImage);
     $white = imagecolorallocate($img, 255, 255, 255);
     $borderColor = imagecolorallocate($img, 255, 182, 193);
     $orig_width = imagesx($img);
     $orig_height = imagesy($img);
-    $font_path = '/home/codedao.jas.plus/public_html/public/image_generator/SVN-Vandella.otf';
+    $font_path = $path.'SVN-Vandella.otf';
 
     // Add text to image
     $font_size = $orig_width / 3 / mb_strlen($text) * 3;
@@ -59,7 +60,7 @@ function writeTextToImage($originalImage, $text = "Hello")
 
     // Random ra tên file, kiểm tra xem có file đó chưa, chưa có thì dùng tên này
     do {
-        $fileName = 'img_' . rand(11111, 99999) . '.jpg';
+        $fileName = $path.'results/img_' . rand(11111, 99999) . '.jpg';
     } while (file_exists($fileName));
     imagejpeg($img, $fileName);
 

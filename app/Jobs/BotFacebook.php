@@ -48,7 +48,7 @@ class BotFacebook implements ShouldQueue
      */
     public function handle()
     {
-        file_put_contents('bog_log.txt', 'BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn .' . $this->requestSource . ' extradata .' . json_encode($this->extraData) . "\n", FILE_APPEND);
+        file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', '['.date("d/m/Y H:i:s", time()).'] BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn ' . $this->requestSource . '. Extradata ' . json_encode($this->extraData) . "\n", FILE_APPEND);
         $bot = Bot::where('id', $this->botId)->first();
         if (!$bot) {
             return;
@@ -170,7 +170,7 @@ class BotFacebook implements ShouldQueue
         // TODO: Nếu bài post sắp tương tác thuộc white_list hoặc group chưa bài đó thuộc white_group thì phải lấy setting theo white_??_comment_on, white_??_reaction_on
 
         // Nếu bật Reaction
-        if ($reaction_on && ($bot->next_comment_time <= time() || $this->requestSource == 'white_list' || $this->requestSource == 'white_group')) {
+        if ($reaction_on && ($bot->next_reaction_time <= time() || ($this->requestSource == 'white_list' && $bot->white_list_run_mode == 'asap') || ($this->requestSource == 'white_group' && $bot->white_group_run_mode == 'asap'))) {
             // Chọn theo cảm xúc khách setup, nếu khách setup số linh tinh thì chọn random 1 trong các cảm xúc
             $reactions = array(1, 2, 3, 4, 6, 8, 16);
             if (in_array($bot->reaction_type, $reactions)) {
@@ -201,7 +201,7 @@ class BotFacebook implements ShouldQueue
         }
 
         // Nếu bật Auto comment
-        if ($comment_on && ($bot->next_comment_time <= time() || $this->requestSource == 'white_list' || $this->requestSource == 'white_group')) {
+        if ($comment_on && ($bot->next_comment_time <= time() || ($this->requestSource == 'white_list' && $this->white_list_run_mode == 'asap') || ($this->requestSource == 'white_group' && $bot->white_group_run_mode == 'asap'))) {
             // Random Sticker ID nếu người dùng có chọn collection
             $stickerId = null;
             if (!empty($bot->comment_sticker_collection)) {
