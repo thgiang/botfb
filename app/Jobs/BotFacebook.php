@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\ZHelper;
 
 class BotFacebook implements ShouldQueue
 {
@@ -24,8 +25,8 @@ class BotFacebook implements ShouldQueue
     private $extraData;
 
     /**
-     * Create a new job instance. Nếu truyền $postId thì bot sẽ tương tác ngay với post đó, ko cần quan tâm thời gian hẹn giờ.
-     * $requestSource là nguồn gốc Bot này bị gọi từ đâu. Hiện có 3 nguồn là WhiteList, WhiteGroup và hẹn giờ thông thường
+     * Create a new job instance.
+     * $requestSource là nguồn gốc Bot này bị gọi từ đâu. Hiện có 3 nguồn là (white_list, white_group) (nếu vào đc tới đây sẽ bỏ qua điều kiện hẹn giờ) và hẹn giờ thông thường
      *
      * @param int $botId
      * @param string $postId
@@ -179,27 +180,9 @@ class BotFacebook implements ShouldQueue
 
             // Lần reaction tiếp theo
             $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
-            $tempHour = date("H", $bot->next_reaction_time);
-            $hours = json_decode($bot->run_time);
-            if (!empty($hours)) {
-                // Nếu next_reaction_time ko thỏa mãn 1 trong các múi giờ thì phải chọn giờ lớn hơn gần nhất
-                if (!in_array($tempHour, $hours)) {
-                    $foundTime = false;
-                    foreach ($hours as $hour) {
-                        if ($hour > $tempHour) {
-                            $time = Carbon::now();
-                            $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hour, str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
-                            $foundTime = true;
-                            break;
-                        }
-                    }
-
-                    // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
-                    if (!$foundTime) {
-                        $time = Carbon::tomorrow();
-                        $bot->next_reaction_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
-                    }
-                }
+            $hours = @json_decode($bot->run_time);
+            if ($hours && !empty($hours) && is_array($hours)) {
+                $bot->next_reaction_time = ZHelper::NearestTime($bot->next_reaction_time, $hours);
             }
         }
 
@@ -266,27 +249,9 @@ class BotFacebook implements ShouldQueue
 
             // Lần comment tiếp theo
             $bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
-            $tempHour = date("H", $bot->next_comment_time);
-            $hours = json_decode($bot->run_time);
-            if (!empty($hours)) {
-                // Nếu next_comment_time ko thỏa mãn 1 trong các múi giờ thì phải chọn giờ lớn hơn gần nhất
-                if (!in_array($tempHour, $hours)) {
-                    $foundTime = false;
-                    foreach ($hours as $hour) {
-                        if ($hour > $tempHour) {
-                            $time = Carbon::now();
-                            $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hour, str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
-                            $foundTime = true;
-                            break;
-                        }
-                    }
-
-                    // Nếu tới đây vẫn ko tìm đc giờ phù hợp thì để ngày mai chạy ngay múi giờ đầu tiên
-                    if (!$foundTime) {
-                        $time = Carbon::tomorrow();
-                        $bot->next_comment_time = Carbon::create($time->year, $time->month, $time->day, $hours[0], str_pad(rand(0, 5), 2, "0", STR_PAD_LEFT), str_pad(rand(0, 30), 2, "0", STR_PAD_LEFT))->timestamp;
-                    }
-                }
+            $hours = @json_decode($bot->run_time);
+            if ($hours && !empty($hours) && is_array($hours)) {
+                $bot->next_comment_time = ZHelper::NearestTime($bot->next_comment_time, $hours);
             }
         }
 

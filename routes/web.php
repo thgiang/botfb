@@ -15,6 +15,7 @@ use App\Jobs\BotFacebook;
 use App\Models\Bot;
 use Carbon\Carbon;
 use App\Models\WhiteGroupIds;
+use App\Helpers\ZHelper;
 
 Route::get('/', function () {
     return view('home');
@@ -32,4 +33,5 @@ Route::get('add', function () {
 Route::get('proxies', 'Api\ProxyController@maintainProxies');
 
 Route::get('test', function () {
+	echo date("H:i:s", ZHelper::NearestTime(time(), [22, 23,0,1,2]));
 });

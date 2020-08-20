@@ -10,6 +10,7 @@ use App\Models\WhiteListIds;
 use App\Models\WhiteGroupIds;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\ZHelper;
 
 class BotController extends Controller
 {
@@ -119,9 +120,17 @@ class BotController extends Controller
 ////                    $bot->{$key} = $request->{$key};
 ////                }
 //            }
+
+			// TODO: Xem lại đoạn lưu này để đỡ phải query 2 lần
             $bot->update($request->all());
+			
             $bot->count_error = isset($request->count_error) ? $request->count_error : 0;
             $bot->error_log = isset($request->error_log) ? $request->count_error : null;
+			$hours = @json_decode($bot->run_time);
+			if ($hours && is_array($hours) && !empty($hours)) {
+				$bot->next_reaction_time = ZHelper::NearestTime(time(), $hours);
+				$bot->next_comment_time = ZHelper::NearestTime(time(), $hours);
+			}
             $bot->save();
 
             WhiteListIds::where('bot_id', $request->bot_id)->delete();
