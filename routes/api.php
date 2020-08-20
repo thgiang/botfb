@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+use  App\Models\Bot;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -43,3 +44,15 @@ Route::get('systems-token', function (Request $request) {
 });
 
 Route::get('/logs', 'Api\LogController@logs');
+
+
+Route::get('/test', function() {
+	$bot = Bot::where('id', 29)->first();
+	$fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
+	$photoId = uploadImageToFacebook('https://codedao.jas.plus/image_generator/examples/her/19.jpg', $bot->cookie, $fbDtg, 'Hóa thú hok?', $bot->proxy);
+	
+	// Gửi comment
+    $comment = commentPostByCookie($bot->cookie, $fbDtg, '165324818540387', 'Siêu đẹp nha', null, $photoId, $bot->proxy);
+	print_r($comment);
+	exit();
+});

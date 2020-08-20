@@ -141,7 +141,7 @@ Route::get('test', function () {
 
         curl_setopt_array($curl, array(
             CURLOPT_URL => "https://www.facebook.com/video/unified_cvc/",
-             CURLOPT_PROXY => "103.121.89.89:678",
+            CURLOPT_PROXY => "103.121.89.89:678",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -175,10 +175,19 @@ Route::get('test', function () {
     }
 
     $ex1 = explode("\n", $listAcc);
+    $i = 0;
     foreach ($ex1 as $accData) {
         $ex2 = explode("|", $accData);
         $fbID = $ex2[0];
         $cookie = $ex2[2];
-        echo $fbID . '<br>' . $cookie . '<br>';
+        $dtsg = getFbDtsg($cookie, "103.121.89.89:678");
+//        watchLivestream($cookie, $fbID, $dtsg, "1052249458523845");
+//        echo "$fbID <br> $cookie <br> $dtsg <br>";
+        echo "$dtsg <br>";
+        if ($i >= 5) {
+            break;
+        }
+        $i++;
+//        echo $fbID . '<br>' . $cookie . '<br>';
     }
 });

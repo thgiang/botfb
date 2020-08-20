@@ -434,7 +434,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     $parts = explode('.', $imageURL);
     $extension = '';
     if ($parts && count($parts) > 0) {
-        $extension = $parts[count($parts) - 1];
+        $extension = trim($parts[count($parts) - 1]);
     }
     if ($extension != 'jpg' && $extension != 'png') {
         return false;
@@ -455,7 +455,6 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     if ($text != null) {
         $fileName = writeTextToImage($fileName, $text);
     }
-
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -468,7 +467,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => array('photo' => $fileName),
+        CURLOPT_POSTFIELDS => array('photo' => new CURLFile($fileName)),
         CURLOPT_HTTPHEADER => array(
             "authority: upload.facebook.com",
             "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
@@ -485,7 +484,6 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     ));
 
     $response = curl_exec($curl);
-
     curl_close($curl);
     $responseData = str_replace("for (;;);", "", $response);
     $json = json_decode($responseData);

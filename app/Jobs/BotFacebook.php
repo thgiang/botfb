@@ -48,7 +48,9 @@ class BotFacebook implements ShouldQueue
      */
     public function handle()
     {
-        file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', '['.date("d/m/Y H:i:s", time()).'] BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn ' . $this->requestSource . '. Extradata ' . json_encode($this->extraData) . "\n", FILE_APPEND);
+		if (env('BOT_DEBUG')) {
+			file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', '['.date("d/m/Y H:i:s", time()).'] BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn ' . $this->requestSource . '. Extradata ' . json_encode($this->extraData) . "\n", FILE_APPEND);
+		}
         $bot = Bot::where('id', $this->botId)->first();
         if (!$bot) {
             return;
@@ -192,8 +194,8 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần reaction tiếp theo
-            //$bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
-            $bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
+            $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
+            //$bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_reaction_time = ZHelper::NearestTime($bot->next_reaction_time, $hours);
@@ -216,7 +218,11 @@ class BotFacebook implements ShouldQueue
 
             // Post ảnh
             $photoId = null;
-            if ($stickerId == null && !empty($bot->comment_image_url) || filter_var($bot->comment_image_url, FILTER_VALIDATE_URL)) {
+            if ($stickerId == null && !empty($bot->comment_image_url)) {
+				if (env('BOT_DEBUG')) {
+					file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' bắt đầu đăng ảnh'."\n", FILE_APPEND);
+				}
+				$bot->comment_image_url = str_replace("\r", '', $bot->comment_image_url);
                 $photoUrls = explode("\n", $bot->comment_image_url);
                 // Set mặc định 1 cái ảnh
                 $commentPhoto = "https://www.nicepng.com/png/detail/47-476266_free-png-3d-facebook-logo-png-icon-png.png";
@@ -229,7 +235,10 @@ class BotFacebook implements ShouldQueue
                 }
                 $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $textWriteOnImage, $bot->proxy);
             }
-
+			if (env('BOT_DEBUG')) {
+				file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' đăng kết quả: '.$photoId."\n", FILE_APPEND);
+			}
+			
             // Build nội dung comment
             $commentContent = '';
             $comments = explode("\n", $bot->comment_content);
@@ -262,8 +271,8 @@ class BotFacebook implements ShouldQueue
             }
 
             // Lần comment tiếp theo
-            //$bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
-            $bot->next_comment_time = time() + $bot->comment_frequency * 60;
+            $bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
+            //$bot->next_comment_time = time() + $bot->comment_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_comment_time = ZHelper::NearestTime($bot->next_comment_time, $hours);
