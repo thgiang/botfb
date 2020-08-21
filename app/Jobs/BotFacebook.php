@@ -191,6 +191,9 @@ class BotFacebook implements ShouldQueue
                 $botLog->post_id = $postId;
                 $botLog->request_source = $this->requestSource;
                 $botLog->save();
+                // React đc thành công rồi thì xóa các lỗi cũ
+                $bot->error_log = null;
+                $bot->count_error = 0;
             }
 
             // Lần reaction tiếp theo
@@ -268,6 +271,9 @@ class BotFacebook implements ShouldQueue
                 $botLog->request_source = $this->requestSource;
                 $botLog->post_id = $postId;
                 $botLog->save();
+                // Comment đc thành công rồi thì xóa các lỗi cũ
+                $bot->error_log = null;
+                $bot->count_error = 0;
             }
 
             // Lần comment tiếp theo
