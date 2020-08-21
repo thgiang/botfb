@@ -238,7 +238,7 @@ class BotFacebook implements ShouldQueue
 			if (env('BOT_DEBUG')) {
 				file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' đăng kết quả: '.$photoId."\n", FILE_APPEND);
 			}
-			
+
             // Build nội dung comment
             $commentContent = '';
             $comments = explode("\n", $bot->comment_content);
@@ -279,6 +279,10 @@ class BotFacebook implements ShouldQueue
             }
         }
 
+        // Nếu setting thời gian like và comment giống nhau, thì sẽ épnext_comment_time và next_reaction_time cũng phải trùng nhau
+        if ($bot->comment_frequency == $bot->reaction_frequency) {
+            $bot->next_comment_time = $bot->next_reaction_time;
+        }
         $bot->save();
     }
 }
