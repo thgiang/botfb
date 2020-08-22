@@ -58,6 +58,13 @@ class BotFacebookV2 implements ShouldQueue
         $bot->trace_code = $traceCode;
         $bot->save();
 
+        // Chuẩn bị proxy
+        if (!$this->CheckBotProxy($bot)) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
+            return false;
+        }
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
+
 // ƯU TIÊN SỐ 1: white_list
         if ($bot->white_list_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_list)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_LIST_ASAP');
@@ -107,18 +114,20 @@ class BotFacebookV2 implements ShouldQueue
             $tryFindPost++;
             if ($tryFindPost > 3) {
                 if ($newsFeedIsEmpty) {
-                    $bot->error_log = 'Đọc news feed ko có bài viết nào';
-                    $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
-                    $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                    $bot->error_log = 'Đọc news feed ko có bài viết nào. Bot sẽ chạy lại sau '.config('bot.try_news_feed_after').' phút';
+                    $bot->next_comment_time = time() + config('bot.try_news_feed_after') * 60;
+                    $bot->next_reaction_time = time() + config('bot.try_news_feed_after') * 60;
+                    $bot->count_error++;
                     $bot->save();
-                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đọc news feed ko có bài viết nào');
+                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đọc news feed lỗi lần thứ '.$bot->count_error.': Ko có bài viết nào. Bot sẽ chạy lại sau '.config('bot.try_news_feed_after').' phút');
                     return false;
                 } else {
                     $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút';
-                    $bot->next_comment_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
-                    $bot->next_reaction_time = $bot->next_comment_time + config('bot.try_news_feed_after') * 60;
+                    $bot->next_comment_time = time() + config('bot.try_news_feed_after') * 60;
+                    $bot->next_reaction_time = time() + config('bot.try_news_feed_after') * 60;
+                    $bot->count_error++;
                     $bot->save();
-                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút');
+                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'News feed lỗi lần thứ '.$bot->count_error.': Có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút');
                     return false;
                 }
             }
@@ -348,13 +357,6 @@ class BotFacebookV2 implements ShouldQueue
                 break;
         }
         BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
-
-        // Chuẩn bị proxy
-        if (!$this->CheckBotProxy($bot)) {
-            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
-            return false;
-        }
-        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
 
         // Lấy FBDTG
         $fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
