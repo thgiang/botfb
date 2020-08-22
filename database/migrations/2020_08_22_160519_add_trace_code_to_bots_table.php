@@ -14,7 +14,7 @@ class AddTraceCodeToBotsTable extends Migration
     public function up()
     {
         Schema::table('bots', function (Blueprint $table) {
-            $table->string('trace_code', 10);
+            $table->string('trace_code', 10)->nullable();
             $table->index('trace_code', 'IDX_TRACE_CODE');
         });
     }
