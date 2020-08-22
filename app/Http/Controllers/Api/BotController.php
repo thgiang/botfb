@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Bot;
 use App\Models\BotLog;
-use App\Models\SystemProxies;
-use App\Models\WhiteListIds;
-use App\Models\WhiteGroupIds;
+use App\Models\SystemProxy;
+use App\Models\WhiteListId;
+use App\Models\WhiteGroupId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Helpers\ZHelper;
@@ -37,7 +37,7 @@ class BotController extends Controller
         if (!isset($request->proxy) || empty($request->proxy)) {
             if (!isset($request->bot_id)) {
                 $needGetProxyFromDB = true;
-                $getProxyFromDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
+                $getProxyFromDB = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
                 if (!$getProxyFromDB) {
                     sendMessageTelegram('Kho proxy bị hết');
                     return response()->json([
@@ -59,7 +59,7 @@ class BotController extends Controller
         do {
             if ($tryTestProxy >= 3) {
                 if ($needGetProxyFromDB == true) {
-                    SystemProxies::where('proxy', $request->proxy)->update(['is_live' => false]);
+                    SystemProxy::where('proxy', $request->proxy)->update(['is_live' => false]);
                 }
                 return response()->json([
                     'status' => 'error',
@@ -137,8 +137,8 @@ class BotController extends Controller
             }
             $bot->save();
 
-            WhiteListIds::where('bot_id', $request->bot_id)->delete();
-            WhiteGroupIds::where('bot_id', $request->bot_id)->delete();
+            WhiteListId::where('bot_id', $request->bot_id)->delete();
+            WhiteGroupId::where('bot_id', $request->bot_id)->delete();
         }
 
         if ($bot) {
@@ -147,7 +147,7 @@ class BotController extends Controller
                 $request->white_list = str_replace("\r", '', $request->white_list);
                 $fbIds = explode("\n", $request->white_list);
                 foreach ($fbIds as $fbId) {
-                    $newWhiteList = new WhiteListIds();
+                    $newWhiteList = new WhiteListId();
                     $newWhiteList->bot_id = $bot->id;
                     $newWhiteList->fb_id = $fbId;
                     $newWhiteList->save();
@@ -159,7 +159,7 @@ class BotController extends Controller
                 $request->white_group = str_replace("\r", '', $request->white_group);
                 $fbIds = explode("\n", $request->white_group);
                 foreach ($fbIds as $fbId) {
-                    $newWhiteGroup = new WhiteGroupIds();
+                    $newWhiteGroup = new WhiteGroupId();
                     $newWhiteGroup->bot_id = $bot->id;
                     $newWhiteGroup->fb_id = $fbId;
                     $newWhiteGroup->save();
@@ -212,7 +212,7 @@ class BotController extends Controller
         if ($bot) {
             $delete = $bot->delete();
             if ($delete) {
-                SystemProxies::where('bot_id', $bot->id)->update([
+                SystemProxy::where('bot_id', $bot->id)->update([
                     'bot_id' => 0
                 ]);
 

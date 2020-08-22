@@ -1,5 +1,17 @@
 <?php
+define('BOT_WHITE_MODE_ASAP', 'asap');
+define('BOT_WHITE_MODE_MIXED', 'mixed');
+define('BOT_TARGET_ALL', 'all');
+define('BOT_TARGET_GROUP', 'group');
+define('BOT_TARGET_FRIEND', 'friend');
+define('BOT_TARGET_WHITELIST', 'whitelist');
+define('BOT_TARGET_WHITEGROUP', 'whitegroup');
 
+define('BOT_SOURCE_WHITE_LIST_ASAP', 'white_list_asap');
+define('BOT_SOURCE_WHITE_GROUP_ASAP', 'white_group_asap');
+define('BOT_SOURCE_WHITE_LIST_MIXED', 'white_list_mixed');
+define('BOT_SOURCE_WHITE_GROUP_MIXED', 'white_group_mixed');
+define('BOT_SOURCE_NORMAL', 'normal');
 function getFbDtsg($cookie, $proxy = null)
 {
     $curl = curl_init();
@@ -441,7 +453,7 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     }
 
     $curlGetImage = curl_init($imageURL);
-    $fileName = public_path() . '/image_generator/downloads/' . rand(0, 10000) . '.' . $extension;
+    $fileName = public_path() . DIRECTORY_SEPARATOR . 'image_generator' . DIRECTORY_SEPARATOR . 'downloads' . DIRECTORY_SEPARATOR . rand(0, 10000) . '.' . $extension;
 //    $fileName = rand(0, 10000) . '.png';
     $fp = fopen($fileName, 'w+');
     //curl_setopt($curlGetImage, CURLOPT_PROXY, $proxy);
@@ -594,8 +606,8 @@ function DoShortCode($str, $extraData = array())
         $name = $extraData['name'];
     }
     $str = str_replace('{ten}', $name, $str);
-	$str = str_replace('{name}', $name, $str);
-	
+    $str = str_replace('{name}', $name, $str);
+
     // Shortcode icon
     if (preg_match("/{icon}/", $str)) {
         $parts = explode('{icon}', $str);

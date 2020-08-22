@@ -223,7 +223,7 @@ class BotFacebook implements ShouldQueue
             $photoId = null;
             if ($stickerId == null && !empty($bot->comment_image_url)) {
 				if (env('BOT_DEBUG')) {
-					file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' bắt đầu đăng ảnh'."\n", FILE_APPEND);
+					file_put_contents(public_path().'/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' bắt đầu đăng ảnh'."\n", FILE_APPEND);
 				}
 				$bot->comment_image_url = str_replace("\r", '', $bot->comment_image_url);
                 $photoUrls = explode("\n", $bot->comment_image_url);
@@ -239,7 +239,7 @@ class BotFacebook implements ShouldQueue
                 $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $textWriteOnImage, $bot->proxy);
             }
 			if (env('BOT_DEBUG')) {
-				file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' đăng kết quả: '.$photoId."\n", FILE_APPEND);
+				file_put_contents(public_path().'/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' đăng kết quả: '.$photoId."\n", FILE_APPEND);
 			}
 
             // Build nội dung comment

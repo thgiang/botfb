@@ -24,8 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('create-jobs:bot-by-time')->everyMinute();
-        $schedule->command('create-jobs:bot-by-white-list')->everyMinute();
+        //$schedule->command('create-jobs:bot-by-time')->everyMinute();
+        //$schedule->command('create-jobs:bot-by-white-list')->everyMinute();
+        $schedule->command('create-jobs:wakeup-bot')->everyMinute();
     }
 
     /**
