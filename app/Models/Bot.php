@@ -6,8 +6,30 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string cookie
- * @property int frequency
+ * @property int reaction_frequency
+ * @property int comment_frequency
  * @property string proxy
+ * @property boolean white_list_reaction_on
+ * @property boolean white_list_comment_on
+ * @property boolean white_group_comment_on
+ * @property boolean white_group_reaction_on
+ * @property boolean comment_on
+ * @property boolean reaction_on
+ * @property boolean next_reaction_time
+ * @property boolean next_comment_time
+ * @property string error_log
+ * @property int count_error
+ * @property string facebook_uid
+ * @property mixed id
+ * @property mixed trace_code
+ * @property mixed reaction_type
+ * @property mixed run_time
+ * @property mixed write_post_owner_name_to_image
+ * @property mixed comment_content
+ * @property mixed black_list
+ * @property null white_group
+ * @property null white_list
+ * @property mixed bot_target
  */
 class Bot extends Model
 {

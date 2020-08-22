@@ -6,8 +6,8 @@ use App\Jobs\BotFacebook;
 use App\Jobs\CrawlNewGroupPost;
 use App\Jobs\CrawlNewPost;
 use App\Models\Bot;
-use App\Models\WhiteGroupIds;
-use App\Models\WhiteListIds;
+use App\Models\WhiteGroupId;
+use App\Models\WhiteListId;
 use Illuminate\Console\Command;
 
 class BotByWhiteList extends Command
@@ -45,7 +45,7 @@ class BotByWhiteList extends Command
     {
         $fbIds = array();
         $fbGroupIds = array();
-        WhiteListIds::chunkById(100, function ($whiteLists) use ($fbIds) {
+        WhiteListId::chunkById(100, function ($whiteLists) use ($fbIds) {
             foreach ($whiteLists as $whiteList) {
                 if (!in_array($whiteList->fb_id, $fbIds)) {
                     $bot = Bot::where('id', $whiteList->bot_id)->first();
@@ -57,7 +57,7 @@ class BotByWhiteList extends Command
             }
         });
 
-        WhiteGroupIds::chunkById(100, function ($whiteGroups) use ($fbGroupIds) {
+        WhiteGroupId::chunkById(100, function ($whiteGroups) use ($fbGroupIds) {
             foreach ($whiteGroups as $whiteGroup) {
                 if (!in_array($whiteGroup->fb_id, $fbGroupIds)) {
                     $bot = Bot::where('id', $whiteGroup->bot_id)->first();

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string comment_content
  * @property string request_source
  * @property string|null sticker_id
+ * @property mixed id
  */
 class BotLog extends Model
 {

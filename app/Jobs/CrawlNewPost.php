@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\Bot;
 use App\Models\BotLog;
 use App\Models\SystemToken;
-use App\Models\WhiteListIds;
+use App\Models\WhiteListId;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -75,7 +75,7 @@ class CrawlNewPost implements ShouldQueue
         // Thêm các bài viết vào queue bot FB
         foreach ($feed->data as $post) {
             // Lấy tất cả các bot đang coi FB này là white list
-            $botIds = WhiteListIds::select('bot_id')->where('fb_id', $this->fb_id)->get()->pluck('bot_id');
+            $botIds = WhiteListId::select('bot_id')->where('fb_id', $this->fb_id)->get()->pluck('bot_id');
             foreach ($botIds as $botId) {
                 $bot = Bot::where('id', $botId)->first();
                 if (!$bot) {

@@ -6,7 +6,7 @@ use App\Jobs\BotFacebook;
 use App\Models\Bot;
 use App\Models\BotLog;
 use Illuminate\Http\Request;
-use App\Models\WhiteGroupIds;
+use App\Models\WhiteGroupId;
 
 class HomeController extends Controller
 {

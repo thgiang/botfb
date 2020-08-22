@@ -5,8 +5,8 @@ namespace App\Jobs;
 use App\Models\Bot;
 use App\Models\BotLog;
 use App\Models\SystemToken;
-use App\Models\WhiteGroupIds;
-use App\Models\WhiteListIds;
+use App\Models\WhiteGroupId;
+use App\Models\WhiteListId;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -40,7 +40,7 @@ class CrawlNewGroupPost implements ShouldQueue
     public function handle()
     {
         // Lấy 1 con bot đang coi group này là white_group với điều kiện nó phải join rồi để quét đc bài mới
-        $whiteIds = WhiteGroupIds::where('fb_id', $this->fb_id)->get();
+        $whiteIds = WhiteGroupId::where('fb_id', $this->fb_id)->get();
 
         $foundBot = null;
         $logs = "";

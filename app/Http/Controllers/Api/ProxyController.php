@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemProxies;
+use App\Models\SystemProxy;
 use Illuminate\Http\Request;
 
 class ProxyController extends Controller
@@ -21,7 +21,7 @@ class ProxyController extends Controller
         $getProxies = $this->getProxies();
         foreach ($getProxies->list as $getProxy) {
             if (isset($getProxy->host)) {
-                \App\Models\SystemProxies::updateOrCreate(
+                \App\Models\SystemProxy::updateOrCreate(
                     [
                         'proxy' => $getProxy->host . ':' . $getProxy->port
                     ],
@@ -38,7 +38,7 @@ class ProxyController extends Controller
         echo "<br>========================<br><br>";
 
         // Kiểm tra những proxy nào hết hạn mà đang dùng thì gia hạn
-        $proxiesExpiredInDB = SystemProxies::where('bot_id', '!=', 0)->where('expired', '<', time())->get();
+        $proxiesExpiredInDB = SystemProxy::where('bot_id', '!=', 0)->where('expired', '<', time())->get();
         if ($proxiesExpiredInDB && $proxiesExpiredInDB->count() > 0) {
             foreach ($proxiesExpiredInDB as $proxyNeedRenew) {
                 $proxyToRenew = $proxyNeedRenew->proxy;
@@ -61,7 +61,7 @@ class ProxyController extends Controller
         echo "<br>========================<br>";
 
         // Kiểm tra trong kho nếu dưới 10 proxy thì mua proxy mới
-        $proxiesInDB = SystemProxies::where('bot_id', 0)->where('is_live', true)->get();
+        $proxiesInDB = SystemProxy::where('bot_id', 0)->where('is_live', true)->get();
         $proxiesCountToMaintain = 15;
         if ($proxiesInDB->count() < $proxiesCountToMaintain) {
             $period = 30;
@@ -143,10 +143,10 @@ class ProxyController extends Controller
     public function replaceProxy($proxyDie, $botID)
     {
         // Chuyển proxy bị die về kho, để trạng thái thành die
-        SystemProxies::where('proxy', $proxyDie)->update(['is_live' => false, 'bot_id' => 0]);
+        SystemProxy::where('proxy', $proxyDie)->update(['is_live' => false, 'bot_id' => 0]);
 
         // Lấy 1 proxy mới
-        $getNewProxy = SystemProxies::where('bot_id', 0)->where('is_live', true)->first();
+        $getNewProxy = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
         if ($getNewProxy) {
             $getNewProxy->update(['bot_id' => $botID]);
             return $getNewProxy->proxy;

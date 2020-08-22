@@ -2,18 +2,18 @@
 
 namespace App\Console\Commands\CreateJobs;
 
-use App\Jobs\BotFacebook;
+use App\Jobs\BotFacebookV2;
 use App\Models\Bot;
 use Illuminate\Console\Command;
 
-class BotByTime extends Command
+class WakeupBot extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'create-jobs:bot-by-time';
+    protected $signature = 'create-jobs:wakeup-bot';
 
     /**
      * The console command description.
@@ -40,13 +40,13 @@ class BotByTime extends Command
     public function handle()
     {
         Bot::where('count_error', '<', config('bot.max_try_time'))->where(function ($query) {
-            $query->where('next_reaction_time', '<=', time())->orWhere('next_comment_time', '<=', time());
+            $query->where('next_reaction_time', '<=', time())
+                ->orWhere('next_comment_time', '<=', time())
+                ->orWhere('white_group_run_mode', 'asap')
+                ->orWhere('white_list_run_mode', 'asap');
         })->chunkById(100, function ($bots) {
             foreach ($bots as $bot) {
-                // Nếu là whitelist thì đã có job BotByWhiteList xử lý nên ko xử lý ở đây nữa.
-                if ($bot->bot_target != BOT_TARGET_WHITELIST && $bot->bot_target != BOT_TARGET_WHITEGROUP) {
-                    BotFacebook::dispatch($bot->id);
-                }
+                BotFacebookV2::dispatch($bot->id);
             }
         });
     }
