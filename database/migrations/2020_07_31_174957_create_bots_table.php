@@ -16,8 +16,8 @@ class CreateBotsTable extends Migration
         Schema::create('bots', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->text('cookie');
-            $table->string('name', 255)->default('');
-            $table->string('facebook_uid', 255);
+            $table->string('name', 191)->default('');
+            $table->string('facebook_uid', 191);
             $table->string('proxy', 191)->default('0:0')->nullable();
 
             $table->boolean('reaction_on')->default(false);
