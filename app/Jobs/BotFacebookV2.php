@@ -146,7 +146,7 @@ class BotFacebookV2 implements ShouldQueue
         $tryFindPost = 0;
         $newsFeedIsEmpty = true;
 
-        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Tìm BOT trên news feed');
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Tìm bài trên news feed');
 
         $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
         $ignoreFBPostIds = BotLog::where('bot_fid', $bot->facebook_uid)->limit(100)->pluck('post_id')->toArray();
@@ -393,12 +393,12 @@ class BotFacebookV2 implements ShouldQueue
                 if ($bot->next_comment_time <= time()) {
                     $commentOn = $bot->comment_on;
                 }
-                if ($bot->next_comment_time <= time()) {
+                if ($bot->next_reaction_time <= time()) {
                     $reactionOn = $bot->reaction_on;
                 }
                 break;
         }
-        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
 
         // Lấy FBDTG
         $fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
