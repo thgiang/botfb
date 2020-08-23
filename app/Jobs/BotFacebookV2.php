@@ -441,8 +441,8 @@ class BotFacebookV2 implements ShouldQueue
             }
 
             // Lần reaction tiếp theo
-            //$bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
-			$bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
+            $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
+			//$bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_reaction_time = ZHelper::NearestTime($bot->next_reaction_time, $hours);
@@ -532,8 +532,8 @@ class BotFacebookV2 implements ShouldQueue
             }
 
             // Lần comment tiếp theo
-            //$bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
-            $bot->next_comment_time = time() + $bot->comment_frequency * 60;
+            $bot->next_comment_time = time() + $bot->comment_frequency * rand(75, 125) / 100 * 60;
+            //$bot->next_comment_time = time() + $bot->comment_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_comment_time = ZHelper::NearestTime($bot->next_comment_time, $hours);
