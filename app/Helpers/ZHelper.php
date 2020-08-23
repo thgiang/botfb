@@ -18,7 +18,9 @@ class ZHelper
 	public static function NearestTime($timeNow, array $validHours) {
 		$nowH = date("H", $timeNow);
 		if (in_array($nowH, $validHours)) {
-			return $timeNow;
+			//return $timeNow;
+			// Cho nó luôn về giây thứ 0 của phút bằng cách trừ số giây lẻ
+			return (int)$timeNow - (int)date('s', $timeNow);
 		}
 
 		$returnTime = time();
