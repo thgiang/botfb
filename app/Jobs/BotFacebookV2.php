@@ -89,17 +89,17 @@ class BotFacebookV2 implements ShouldQueue
 
 // ƯU TIÊN SỐ 3: Đến giờ hoạt động theo lịch bt, random chọn 1 trong 3 nơi là news feed, white_list, white_group
         if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
-            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng thành công. NORMAL thì chưa đến giờ. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng ko thành công. NORMAL thì chưa đến giờ. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
             return;
         }
 
         $wl = false;
         $wg = false;
         if (!empty($bot->white_list)) {
-           $wl = true;
+           $wl = true && ($bot->bot_target != BOT_TARGET_WHITEGROUP);
         }
         if (!empty($bot->white_group)) {
-            $wg = true;
+            $wg = true && ($bot->bot_target != BOT_TARGET_WHITELIST);
         }
 
         // Nếu có WL thì ưu tiên WL trước
@@ -118,13 +118,18 @@ class BotFacebookV2 implements ShouldQueue
 
         wg_and_news_feed:
         if ($wg) {
-            if (rand(0, 1) == 0) {
+            if (rand(0, 1) == 0 || $bot->target == BOT_TARGET_WHITEGROUP) {
                 BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Bắt đầu chuyển sang BOT_SOURCE_WHITE_GROUP_MIXED');
                 if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_MIXED)) {
                     BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_GROUP_MIXED');
                     return;
                 }
             }
+        }
+
+        if ($bot->bot_target == BOT_TARGET_WHITELIST || $bot->bot_target == BOT_TARGET_WHITEGROUP) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng ko thành công. BOT này đang setting chỉ chạy '.$bot->bot_target.', nên ko tương tác ở newsfeed. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
+            return;
         }
 
         BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Bắt đầu chuyển sang sang BOT_SOURCE_NORMAL');
