@@ -88,7 +88,11 @@ class BotFacebookV2 implements ShouldQueue
         }
 
 // ƯU TIÊN SỐ 3: Đến giờ hoạt động theo lịch bt, random chọn 1 trong 3 nơi là news feed, white_list, white_group
-        $targetCount = 0;
+        if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng thành công. NORMAL thì chưa đến giờ. DỪNG');
+            return;
+        }
+
         $wl = false;
         $wg = false;
         if (!empty($bot->white_list)) {
