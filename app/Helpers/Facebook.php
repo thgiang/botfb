@@ -46,10 +46,12 @@ function getFbDtsg($cookie, $proxy = null)
     curl_close($curl);
 
     if (preg_match("/name=\"fb_dtsg\" value=\"(.*?)\" autocomplete=\"off\"/", $response, $dtsg)) {
-        return $dtsg[1];
-    } else {
-        return false;
+        if (!empty($dtsg) && !empty($dtsg[1])) {
+            return $dtsg[1];
+        }
     }
+
+    return false;
 }
 
 function reactionPostByCookie($cookie, $dtsg, $postId, $reactionType, $proxy = null)

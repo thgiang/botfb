@@ -69,10 +69,10 @@ class BotFacebookV2 implements ShouldQueue
         if ($bot->white_list_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_list)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_LIST_ASAP');
             if ($this->BotWhiteList($bot, BOT_SOURCE_WHITE_LIST_ASAP)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_WHITE_LIST_ASAP');
+                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_LIST_ASAP');
                 return;
             } else {
-                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đã dừng BOT_SOURCE_WHITE_LIST_ASAP');
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chạy ko thành công BOT_SOURCE_WHITE_LIST_ASAP');
             }
         }
 
@@ -80,70 +80,64 @@ class BotFacebookV2 implements ShouldQueue
         if ($bot->white_group_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_group)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_GROUP_ASAP');
             if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_ASAP)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_WHITE_GROUP_ASAP');
+                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_GROUP_ASAP');
                 return;
             } else {
-                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đã dừng BOT_SOURCE_WHITE_GROUP_ASAP');
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chạy ko thành công BOT_SOURCE_WHITE_GROUP_ASAP');
             }
         }
 
 // ƯU TIÊN SỐ 3: Đến giờ hoạt động theo lịch bt, random chọn 1 trong 3 nơi là news feed, white_list, white_group
         $targetCount = 0;
+        $wl = false;
+        $wg = false;
         if (!empty($bot->white_list)) {
-            $targetCount++;
+           $wl = true;
         }
         if (!empty($bot->white_group)) {
-            $targetCount++;
+            $wg = true;
         }
-        // Random chọn 1 trong 3 kiểu tương tác
-        $action = rand(0, $targetCount);
 
-        if ($action == 0) {
-            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp ưu tiên BOT_SOURCE_NORMAL');
-            if ($this->BotNewsFeed($bot)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_NORMAL');
-                return;
-            } else if ($this->BotWhiteList($bot, BOT_SOURCE_WHITE_LIST_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'BOT_SOURCE_NORMAL ko thành công nên đã chạy BOT_SOURCE_WHITE_LIST_MIXED');
-                return;
-            } else if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'BOT_SOURCE_NORMAL, BOT_SOURCE_WHITE_LIST_MIXED ko thành công nên đã chạy BOT_SOURCE_WHITE_GROUP_MIXED');
-                return;
-            } else {
-                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chịu dừng thôi đổi hết bài rồi.');
-                return;
-            }
-        } else if ($action == 1) {
+        // Nếu có WL thì ưu tiên WL trước
+        if ($wl) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp ưu tiên BOT_SOURCE_WHITE_LIST_MIXED');
             if ($this->BotWhiteList($bot, BOT_SOURCE_WHITE_LIST_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_WHITE_LIST_MIXED');
-                return;
-            } else if ($this->BotNewsFeed($bot)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'BOT_SOURCE_WHITE_LIST_MIXED ko thành công nên đã chạy BOT_SOURCE_NORMAL');
-                return;
-            } else if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'BOT_SOURCE_NORMAL, BOT_SOURCE_WHITE_LIST_MIXED ko thành công nên đã chạy BOT_SOURCE_WHITE_GROUP_MIXED');
+                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_LIST_MIXED');
                 return;
             } else {
-                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chịu dừng thôi đổi hết bài rồi.');
-                return;
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chạy ko thành công công BOT_SOURCE_WHITE_LIST_MIXED');
+                goto wg_and_news_feed;
             }
-        } else if ($action == 2) {
-            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp ưu tiên BOT_SOURCE_WHITE_GROUP_MIXED');
+        } else {
+            goto wg_and_news_feed;
+        }
+
+        wg_and_news_feed:
+        if ($wg) {
+            if (rand(0, 1) == 0) {
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Bắt đầu chuyển sang BOT_SOURCE_WHITE_GROUP_MIXED');
+                if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_MIXED)) {
+                    BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_GROUP_MIXED');
+                    return;
+                }
+            }
+        }
+
+        BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Bắt đầu chuyển sang sang BOT_SOURCE_NORMAL');
+        if ($this->BotNewsFeed($bot)) {
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_NORMAL');
+            return;
+        } else {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chạy ko thành công BOT_SOURCE_NORMAL');
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chuyển sang chạy group BOT_SOURCE_WHITE_GROUP_MIXED');
             if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_WHITE_GROUP_MIXED');
-                return;
-            } else if ($this->BotWhiteList($bot, BOT_SOURCE_WHITE_LIST_MIXED)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'BOT_SOURCE_WHITE_GROUP_MIXED, BOT_SOURCE_WHITE_LIST_MIXED ko thành công nên đã chạy BOT_SOURCE_WHITE_LIST_MIXED');
-                return;
-            } else if ($this->BotNewsFeed($bot)) {
-                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Đã chạy BOT_SOURCE_NORMAL');
-                return;
-            } else {
-                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chịu dừng thôi đổi hết bài rồi.');
+                BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Chạy thành công BOT_SOURCE_WHITE_GROUP_MIXED');
                 return;
             }
         }
+
+        // Tới đây mà vẫn chưa return thì là lỗi
+        BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chịu đã thử cả các kiểu ko thành công nên dừng');
     }
 
     public function BotNewsFeed(Bot $bot)
