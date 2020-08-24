@@ -372,7 +372,7 @@ class BotFacebookV2 implements ShouldQueue
     {
 		if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
 			// Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
-			if (CheckBotProxy($bot)) {
+			if ($this->CheckBotProxy($bot)) {
 				$bot->count_error = 10;
 				$bot->error_log("Cookie die. Bot dừng chạy lúc ".date("d/m/Y H:i:s", time()));
 				$bot->save();
@@ -387,7 +387,7 @@ class BotFacebookV2 implements ShouldQueue
 			}
 			return false;
 		} else {
-		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
+			BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
 		}
 		
         $commentOn = false;
