@@ -370,8 +370,6 @@ class BotFacebookV2 implements ShouldQueue
      */
     public function BotFocusToSpecialPost(Bot $bot, $fbPostId, $source = BOT_SOURCE_WHITE_LIST_ASAP)
     {
-		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost. Kiểm tra cookie đầu tiên', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
-	
 		if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
 			// Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
 			if (CheckBotProxy($bot)) {
@@ -388,10 +386,14 @@ class BotFacebookV2 implements ShouldQueue
 				BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
 			}
 			return false;
+		} else {
+		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
 		}
+		
         $commentOn = false;
         $reactionOn = false;
-
+		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
+	
         // Ktra xem cần làm hành động gì (comment, reaction)
         switch ($source) {
             case BOT_SOURCE_WHITE_LIST_ASAP:
