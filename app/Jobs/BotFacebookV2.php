@@ -20,6 +20,7 @@ use App\Helpers\ZHelper;
 
 class BotFacebookV2 implements ShouldQueue
 {
+    // TODO Check cookie ngay khi check proxy xong
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 50;
@@ -65,7 +66,7 @@ class BotFacebookV2 implements ShouldQueue
         }
         BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
 
-// ƯU TIÊN SỐ 1: white_list
+        // ƯU TIÊN SỐ 1: white_list
         if ($bot->white_list_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_list)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_LIST_ASAP');
             if ($this->BotWhiteList($bot, BOT_SOURCE_WHITE_LIST_ASAP)) {
@@ -76,7 +77,7 @@ class BotFacebookV2 implements ShouldQueue
             }
         }
 
-// ƯU TIÊN SỐ 2: white_group
+        // ƯU TIÊN SỐ 2: white_group
         if ($bot->white_group_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_group)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_GROUP_ASAP');
             if ($this->BotWhiteGroup($bot, BOT_SOURCE_WHITE_GROUP_ASAP)) {
@@ -87,7 +88,7 @@ class BotFacebookV2 implements ShouldQueue
             }
         }
 
-// ƯU TIÊN SỐ 3: Đến giờ hoạt động theo lịch bt, random chọn 1 trong 3 nơi là news feed, white_list, white_group
+        // ƯU TIÊN SỐ 3: Đến giờ hoạt động theo lịch bt, random chọn 1 trong 3 nơi là news feed, white_list, white_group
         if ($bot->next_comment_time > time() && $bot->next_reaction_time > time()) {
             BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng ko thành công. NORMAL thì chưa đến giờ. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
             return;

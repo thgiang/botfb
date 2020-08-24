@@ -43,10 +43,12 @@ Route::get('test', function () {
 //
 //    print_r(reactionPostByCookie($cookie, $fb, "2639785719571784", 6, $proxy));
 
+//    $bots = Bot::where('error_log', 'LIKE', '%Proxy của tài khoản bị die, không lấy được proxy mới,%')->update([
+//        'proxy' => null
+//    ]);
 
-//    $test = new \App\Http\Controllers\Api\TokenController();
-//    return $test->maintainSystemTokens();
-
-    $accountsNotHaveProxy = Bot::where('is_active', true)->where('proxy', null)->get();
-    return $accountsNotHaveProxy;
+    $bots = Bot::all();
+    $botUnique = $bots->unique('proxy');
+    $botsDuplicate = $bots->diff($botUnique);
+    return $botsDuplicate;
 });

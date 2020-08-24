@@ -21,8 +21,7 @@ class TokenController extends Controller
         }
 
         // Lấy toàn bộ token đang die, trong 3 tiếng gần đây không được update ra
-//        ->where('updated_at', '<=', Carbon::now()->subHours(3)->toDateTimeString())
-        $listDieTokens = SystemToken::where('is_live', false)->get();
+        $listDieTokens = SystemToken::where('is_live', false)->where('updated_at', '<=', Carbon::now()->subHours(3)->toDateTimeString())->get();
         foreach ($listDieTokens as $dieToken) {
             // Lấy thông tin token
             $tokenInfo = FacebookGet('me', array(), $dieToken->token, $proxy);
@@ -36,8 +35,7 @@ class TokenController extends Controller
                 $countLiveToken = SystemToken::where('is_live', true)->count();
                 sendMessageTelegram("GOOD NEWS: Một token bị dẹo (ID " . $dieToken->id . ") vừa bật dậy sống lại, hệ thống hiện có " . $countLiveToken . " token");
                 Log::error("GOOD NEWS: Một token bị dẹo vừa bật dậy sống lại, hệ thống hiện có " . $countLiveToken . " token");
-
-                return 1;
+                return $dieToken;
             } else {
                 // Nếu token chết 24 tiếng rồi mà không gọi dậy được thì xóa đi cho rảnh nợ
                 if ($dieToken->updated_at < Carbon::now()->subHours(24)->toDateTimeString()) {
@@ -46,10 +44,11 @@ class TokenController extends Controller
                     $countLiveToken = SystemToken::where('is_live', true)->count();
                     sendMessageTelegram("BAD NEWS: Token ID " . $dieToken->id . " đã die trên 24 giờ mà lay mãi không dậy, quyết định khai trừ khỏi quân ngũ, hệ thống hiện còn " . $countLiveToken . " token");
                     Log::error("BAD NEWS: Token ID " . $dieToken->id . " đã die trên 24 giờ mà lay mãi không dậy, quyết định khai trừ khỏi quân ngũ, hệ thống hiện còn " . $countLiveToken . " token");
+                    return 0;
                 }
             }
         }
 
-        return 0;
+        return "Không cứu, cũng không xóa chiến hữu nào";
     }
 }
