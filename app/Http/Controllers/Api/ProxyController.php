@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bot;
 use App\Models\SystemProxy;
 use Illuminate\Http\Request;
 
@@ -13,23 +14,49 @@ class ProxyController extends Controller
     // TODO Proxy hết hạn thì chỉ gia hạn số ngày = hạn sử dụng của bot đang dùng proxy đấy thôi, không fix cứng tránh phí
     public function maintainProxies()
     {
+        // Những acc nào đang active mà không có proxy thì lấy trong kho ra phát
+        $accountsNotHaveProxy = Bot::where('is_active', true)->where('proxy', null)->get();
+        foreach ($accountsNotHaveProxy as $accountNotHaveProxy) {
+            $getProxy = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
+            if ($getProxy) {
+                $accountNotHaveProxy->proxy = $getProxy->proxy;
+                $accountNotHaveProxy->count_error = 0;
+                $accountNotHaveProxy->error_log = 'Đã thay mới proxy cho tài khoản ' . $accountNotHaveProxy->id . ' lúc ' . date("d/m/Y H:i:s") . '';
+                $accountNotHaveProxy->save();
+                $getProxy->save();
+
+                sendMessageTelegram('Đã thay mới proxy cho tài khoản ' . $accountNotHaveProxy->id . ' lúc ' . date("d/m/Y H:i:s") . '');
+            }
+        }
+
         echo "========================<br>";
         echo "Cập nhật tất cả proxy đang có";
         echo "<br>========================<br><br>";
+
 
         // Cập nhật tất cả proxy đang có
         $getProxies = $this->getProxies();
         foreach ($getProxies->list as $getProxy) {
             if (isset($getProxy->host)) {
-                \App\Models\SystemProxy::updateOrCreate(
-                    [
-                        'proxy' => $getProxy->host . ':' . $getProxy->port
-                    ],
-                    [
-                        'is_live' => true,
-                        'expired' => $getProxy->unixtime_end
-                    ]);
-                echo 'Update thành công ' . $getProxy->host . '<br>';
+                // Tìm proxy này trong DB
+                $getProxyFromDB = SystemProxy::where('proxy', $getProxy->host . ':' . $getProxy->port)->first();
+                if ($getProxyFromDB) {
+                    // Nếu proxy nào đang báo die thì báo về server để check lại
+                    if ($getProxyFromDB->is_live == false) {
+                        echo 'Proxy ' . $getProxy->id . ' đang báo die, gọi về server để check lại <br>';
+                        $this->reportProxyDie($getProxy->id);
+                        $getProxyFromDB->is_live = true;
+                    }
+                    $getProxyFromDB->expired = $getProxy->unixtime_end;
+                    $getProxyFromDB->save();
+                    echo 'Update thành công ' . $getProxy->host . '<br>';
+                } else {
+                    $addNewProxyToDB = new SystemProxy();
+                    $addNewProxyToDB->proxy = $getProxy->host . ':' . $getProxy->port;
+                    $addNewProxyToDB->is_live = true;
+                    $addNewProxyToDB->expired = $getProxy->unixtime_end;
+                    $addNewProxyToDB->save();
+                }
             }
         }
 
@@ -56,13 +83,14 @@ class ProxyController extends Controller
             echo "Không có proxy nào hết hạn<br>";
         }
 
+        // Kiểm tra trong kho nếu dưới $proxiesCountToMaintain proxy thì mua proxy mới
+        $proxiesInDB = SystemProxy::where('bot_id', 0)->where('is_live', true)->get();
+        $proxiesCountToMaintain = 10;
+
         echo "<br>========================<br>";
-        echo "Kiểm tra trong kho nếu dưới 20 proxy thì mua proxy mới";
+        echo "Kiểm tra trong kho nếu dưới " . $proxiesCountToMaintain . " proxy thì mua proxy mới";
         echo "<br>========================<br>";
 
-        // Kiểm tra trong kho nếu dưới 10 proxy thì mua proxy mới
-        $proxiesInDB = SystemProxy::where('bot_id', 0)->where('is_live', true)->get();
-        $proxiesCountToMaintain = 15;
         if ($proxiesInDB->count() < $proxiesCountToMaintain) {
             $period = 30;
             $proxiesNeedToBuy = $proxiesCountToMaintain - $proxiesInDB->count();
@@ -125,6 +153,27 @@ class ProxyController extends Controller
 
         curl_setopt_array($curl, array(
             CURLOPT_URL => "https://proxyaz.com/api/" . $this->proxyKey . "/prolong?period=" . $period . "&ids=" . $ids,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET"
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return json_decode($response);
+    }
+
+    public function reportProxyDie($proxyID)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://proxyaz.com/api/" . $this->proxyKey . "/check?ids=" . $proxyID,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,

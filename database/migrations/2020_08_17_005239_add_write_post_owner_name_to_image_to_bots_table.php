@@ -14,7 +14,7 @@ class AddWritePostOwnerNameToImageToBotsTable extends Migration
     public function up()
     {
         Schema::table('bots', function (Blueprint $table) {
-            $table->string('write_post_owner_name_to_image')->after('comment_image_url')->default(false);
+            $table->boolean('write_post_owner_name_to_image')->after('comment_image_url')->default(false);
         });
     }
 

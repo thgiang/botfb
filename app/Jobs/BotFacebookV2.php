@@ -96,7 +96,7 @@ class BotFacebookV2 implements ShouldQueue
         $wl = false;
         $wg = false;
         if (!empty($bot->white_list)) {
-           $wl = true && ($bot->bot_target != BOT_TARGET_WHITEGROUP);
+            $wl = true && ($bot->bot_target != BOT_TARGET_WHITEGROUP);
         }
         if (!empty($bot->white_group)) {
             $wg = true && ($bot->bot_target != BOT_TARGET_WHITELIST);
@@ -128,7 +128,7 @@ class BotFacebookV2 implements ShouldQueue
         }
 
         if ($bot->bot_target == BOT_TARGET_WHITELIST || $bot->bot_target == BOT_TARGET_WHITEGROUP) {
-            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng ko thành công. BOT này đang setting chỉ chạy '.$bot->bot_target.', nên ko tương tác ở newsfeed. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'WHITE_LIST, WHITE_GROUP đã chạy nhưng ko thành công. BOT này đang setting chỉ chạy ' . $bot->bot_target . ', nên ko tương tác ở newsfeed. DỪNG', array('time' => date("H:i:s", time()), 'next_comment_time' => date("H:i:s", $bot->next_comment_time), 'next_reaction_time' => date("H:i:s", $bot->next_reaction_time)));
             return;
         }
 
@@ -163,12 +163,12 @@ class BotFacebookV2 implements ShouldQueue
             $tryFindPost++;
             if ($tryFindPost > 3) {
                 if ($newsFeedIsEmpty) {
-                    $bot->error_log = 'Đọc news feed ko có bài viết nào. Bot sẽ chạy lại sau '.config('bot.try_news_feed_after').' phút';
+                    $bot->error_log = 'Đọc news feed ko có bài viết nào. Bot sẽ chạy lại sau ' . config('bot.try_news_feed_after') . ' phút';
                     $bot->next_comment_time = time() + config('bot.try_news_feed_after') * 60;
                     $bot->next_reaction_time = time() + config('bot.try_news_feed_after') * 60;
                     $bot->count_error++;
                     $bot->save();
-                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đọc news feed lỗi lần thứ '.$bot->count_error.': Ko có bài viết nào. Bot sẽ chạy lại sau '.config('bot.try_news_feed_after').' phút');
+                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Đọc news feed lỗi lần thứ ' . $bot->count_error . ': Ko có bài viết nào. Bot sẽ chạy lại sau ' . config('bot.try_news_feed_after') . ' phút');
                     return false;
                 } else {
                     $bot->error_log = 'News feed có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút';
@@ -176,7 +176,7 @@ class BotFacebookV2 implements ShouldQueue
                     $bot->next_reaction_time = time() + config('bot.try_news_feed_after') * 60;
                     $bot->count_error++;
                     $bot->save();
-                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'News feed lỗi lần thứ '.$bot->count_error.': Có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút');
+                    BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'News feed lỗi lần thứ ' . $bot->count_error . ': Có bài nhưng tương tác hết rồi :( Để chạy lại sau ' . config('bot.try_news_feed_after') . ' phút');
                     return false;
                 }
             }
@@ -264,7 +264,7 @@ class BotFacebookV2 implements ShouldQueue
         }
         $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
 
-        foreach ($whiteIds AS $whiteId) {
+        foreach ($whiteIds as $whiteId) {
             // Kiểm tra xem đã join group chưa
             if (!checkCookieJoinedGroup($bot->cookie, $whiteId->fb_id, $bot->proxy)) {
                 BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Chưa join group', array('bot_id' => $whiteId->bot_id, 'bot_facebook_uid' => $bot->facebook_uid, 'group_fb_id' => $whiteId->fb_id));
@@ -339,7 +339,7 @@ class BotFacebookV2 implements ShouldQueue
 
         // Lấy thông tin token
         $tokenInfo = FacebookGet('me', array(), $token->token, $proxy);
-        if (empty($tokenInfo) || empty($tokenInfo->id)) {
+        if (!isset($tokenInfo) || !isset($tokenInfo->id)) {
             $token->is_live = false;
             $token->save();
 
@@ -422,7 +422,7 @@ class BotFacebookV2 implements ShouldQueue
 
         // Gửi reaction
         if ($reactionOn) {
-            $reactions = array(1, 2, 3, 4, 6, 8, 16);
+            $reactions = array(1, 2, 3, 4, 7, 8, 16);
             if (in_array($bot->reaction_type, $reactions)) {
                 $reactionType = $bot->reaction_type;
             } else {
@@ -447,7 +447,7 @@ class BotFacebookV2 implements ShouldQueue
 
             // Lần reaction tiếp theo
             $bot->next_reaction_time = time() + $bot->reaction_frequency * rand(75, 125) / 100 * 60;
-			//$bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
+            //$bot->next_reaction_time = time() + $bot->reaction_frequency * 60;
             $hours = @json_decode($bot->run_time);
             if ($hours && !empty($hours) && is_array($hours)) {
                 $bot->next_reaction_time = ZHelper::NearestTime($bot->next_reaction_time, $hours);
@@ -569,9 +569,11 @@ class BotFacebookV2 implements ShouldQueue
                     sendMessageTelegram('Proxy của tài khoản bị die, thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
                     $replaceProxy = $proxyController->replaceProxy($bot->proxy, $bot->id);
 
+                    // Nếu lấy proxy mới thất bại (do kho hết proxy) thì chuyển proxy của acc thành null để hàm maintainProxies tự cấp phát proxy mới khi kho có
                     if ($replaceProxy == false) {
                         $bot->count_error = config('bot.max_try_time');
                         $bot->error_log = 'Proxy của tài khoản bị die, không lấy được proxy mới, tài khoản dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
+                        $bot->proxy = null;
                         $bot->save();
                         sendMessageTelegram('Proxy của bot ' . $bot->id . ' bị die, yêu cầu thay mới nhưng kho hết proxy');
                         return true;

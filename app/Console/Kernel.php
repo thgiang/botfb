@@ -27,7 +27,8 @@ class Kernel extends ConsoleKernel
         //$schedule->command('create-jobs:bot-by-time')->everyMinute();
         //$schedule->command('create-jobs:bot-by-white-list')->everyMinute();
         $schedule->command('create-jobs:wakeup-bot')->everyMinute();
-
+        $schedule->command('proxies:maintain')->everyMinute();
+        $schedule->command('tokens:maintain')->everyMinute();
     }
 
     /**

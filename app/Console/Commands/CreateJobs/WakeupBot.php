@@ -39,7 +39,7 @@ class WakeupBot extends Command
      */
     public function handle()
     {
-        Bot::where('count_error', '<', config('bot.max_try_time'))->where(function ($query) {
+        Bot::where('is_active', true)->where('count_error', '<', config('bot.max_try_time'))->where(function ($query) {
             $query->where('next_reaction_time', '<=', time())
                 ->orWhere('next_comment_time', '<=', time())
                 ->orWhere('white_group_run_mode', 'asap')

@@ -35,6 +35,11 @@ class BotController extends Controller
         $needGetProxyFromDB = false;
         $needCheckProxy = true;
         if (!isset($request->proxy) || empty($request->proxy)) {
+
+            // Set $needCheckProxy thành true thì bên dưới sẽ không check proxy live/die nữa
+            // Nếu không phải proxy đẩy từ ngoài vào thì mặc định proxy lấy từ Database ra luôn sống, nếu die cũng có cơ chế tự đổi sau, nên ở bước này không cần check nữa
+            $needCheckProxy = false;
+
             if (!isset($request->bot_id)) {
                 $needGetProxyFromDB = true;
                 $getProxyFromDB = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
@@ -49,8 +54,6 @@ class BotController extends Controller
             } else {
                 // Nếu là update thông tin nick, mà proxy truyền vào rỗng thì xóa nó đi để khỏi update vào DB
                 unset($request['proxy']);
-                // Set $needCheckProxy thành true thì bên dưới sẽ không check proxy live/die nữa
-                $needCheckProxy = false;
             }
         }
 
@@ -128,6 +131,11 @@ class BotController extends Controller
             // TODO: Xem lại đoạn lưu này để đỡ phải query 2 lần
             $bot->update($request->all());
 
+            // Nếu tắt bot không chạy nữa thì trả proxy về DB luôn
+            if ($bot->is_active == false) {
+                SystemProxy::where('proxy', $bot->proxy)->update(['bot_id' => 0]);
+                $bot->proxy = null;
+            }
             $bot->count_error = isset($request->count_error) ? $request->count_error : 0;
             $bot->error_log = isset($request->error_log) ? $request->count_error : null;
             $hours = @json_decode($bot->run_time);

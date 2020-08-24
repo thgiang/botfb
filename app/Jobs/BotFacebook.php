@@ -48,9 +48,9 @@ class BotFacebook implements ShouldQueue
      */
     public function handle()
     {
-		if (env('BOT_DEBUG')) {
-			file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', '['.date("d/m/Y H:i:s", time()).'] BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn ' . $this->requestSource . '. Extradata ' . json_encode($this->extraData) . "\n", FILE_APPEND);
-		}
+        if (env('BOT_DEBUG')) {
+            file_put_contents('/home/codedao.jas.plus/public_html/public/bot_log.txt', '[' . date("d/m/Y H:i:s", time()) . '] BOT ' . $this->botId . ' tương tác với post ' . $this->postId . ' nguồn ' . $this->requestSource . '. Extradata ' . json_encode($this->extraData) . "\n", FILE_APPEND);
+        }
         $bot = Bot::where('id', $this->botId)->first();
         if (!$bot) {
             return;
@@ -78,7 +78,7 @@ class BotFacebook implements ShouldQueue
             do {
                 if ($tryTestProxy >= 3) {
                     $proxyController = new ProxyController();
-                    sendMessageTelegram('Proxy của tài khoản bị die, thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
+                    sendMessageTelegram('Proxy của tài khoản ' . $bot->id . ' bị die, tiến hành thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
                     $replaceProxy = $proxyController->replaceProxy($bot->proxy, $bot->id);
 
                     if ($replaceProxy == false) {
@@ -87,7 +87,7 @@ class BotFacebook implements ShouldQueue
                         $bot->save();
                         sendMessageTelegram('Proxy của bot ' . $bot->id . ' bị die, yêu cầu thay mới nhưng kho hết proxy');
                     } else {
-                        $bot->error_log = 'Proxy của tài khoản bị die, đã thay proxy mới lúc ' . date("d/m/Y H:i:s") . '';
+                        $bot->error_log = 'Proxy của tài khoản ' . $bot->id . ' bị die, tiến hành thay proxy mới lúc ' . date("d/m/Y H:i:s") . '';
                         $bot->proxy = $replaceProxy;
                         $bot->save();
                     }
@@ -222,10 +222,10 @@ class BotFacebook implements ShouldQueue
             // Post ảnh
             $photoId = null;
             if ($stickerId == null && !empty($bot->comment_image_url)) {
-				if (env('BOT_DEBUG')) {
-					file_put_contents(public_path().'/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' bắt đầu đăng ảnh'."\n", FILE_APPEND);
-				}
-				$bot->comment_image_url = str_replace("\r", '', $bot->comment_image_url);
+                if (env('BOT_DEBUG')) {
+                    file_put_contents(public_path() . '/bot_log.txt', date("H:i:s", time()) . ' BOT ' . $bot->id . ' bắt đầu đăng ảnh' . "\n", FILE_APPEND);
+                }
+                $bot->comment_image_url = str_replace("\r", '', $bot->comment_image_url);
                 $photoUrls = explode("\n", $bot->comment_image_url);
                 // Set mặc định 1 cái ảnh
                 $commentPhoto = "https://www.nicepng.com/png/detail/47-476266_free-png-3d-facebook-logo-png-icon-png.png";
@@ -238,9 +238,9 @@ class BotFacebook implements ShouldQueue
                 }
                 $photoId = uploadImageToFacebook($commentPhoto, $bot->cookie, $fbDtg, $textWriteOnImage, $bot->proxy);
             }
-			if (env('BOT_DEBUG')) {
-				file_put_contents(public_path().'/bot_log.txt', date("H:i:s", time()). ' BOT '.$bot->id.' đăng kết quả: '.$photoId."\n", FILE_APPEND);
-			}
+            if (env('BOT_DEBUG')) {
+                file_put_contents(public_path() . '/bot_log.txt', date("H:i:s", time()) . ' BOT ' . $bot->id . ' đăng kết quả: ' . $photoId . "\n", FILE_APPEND);
+            }
 
             // Build nội dung comment
             $commentContent = '';
