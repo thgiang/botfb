@@ -370,6 +370,25 @@ class BotFacebookV2 implements ShouldQueue
      */
     public function BotFocusToSpecialPost(Bot $bot, $fbPostId, $source = BOT_SOURCE_WHITE_LIST_ASAP)
     {
+		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost. Kiểm tra cookie đầu tiên', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
+	
+		if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
+			// Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
+			if (CheckBotProxy($bot)) {
+				$bot->count_error = 10;
+				$bot->error_log("Cookie die. Bot dừng chạy lúc ".date("d/m/Y H:i:s", time()));
+				$bot->save();
+				BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
+			} else {
+				
+				$bot->proxy = null;
+				$bot->count_error = 10;
+				$bot->error_log = "Proxy die. Ktra lúc ".date("d/m/Y H:i:s", time());
+				$bot->save();
+				BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
+			}
+			return false;
+		}
         $commentOn = false;
         $reactionOn = false;
 
@@ -408,7 +427,7 @@ class BotFacebookV2 implements ShouldQueue
                 }
                 break;
         }
-        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
+        
 
         // Lấy FBDTG
         $fbDtg = getFbDtsg($bot->cookie, $bot->proxy);

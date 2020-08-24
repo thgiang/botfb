@@ -47,8 +47,16 @@ Route::get('test', function () {
 //        'proxy' => null
 //    ]);
 
-    $bots = Bot::all();
-    $botUnique = $bots->unique('proxy');
-    $botsDuplicate = $bots->diff($botUnique);
-    return $botsDuplicate;
+//    $bots = Bot::all();
+//    $botUnique = $bots->unique('proxy');
+//    $botsDuplicate = $bots->diff($botUnique);
+//    foreach ($botsDuplicate as $botDuplicate) {
+//        Bot::where('id', $botDuplicate->id)->update([
+//            'proxy' => null
+//        ]);
+//    }
+//    return $botsDuplicate;
+
+    $errorBots = Bot::get();
+    return $errorBots->count();
 });

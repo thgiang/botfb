@@ -14,8 +14,8 @@ class ProxyController extends Controller
     // TODO Proxy hết hạn thì chỉ gia hạn số ngày = hạn sử dụng của bot đang dùng proxy đấy thôi, không fix cứng tránh phí
     public function maintainProxies()
     {
-        // Những acc nào đang active mà không có proxy thì lấy trong kho ra phát
-        $accountsNotHaveProxy = Bot::where('is_active', true)->where('proxy', null)->get();
+        // Những acc nào đang active mà không có proxy + không update trong 5 phút trở lại đây thì lấy trong kho ra phát (5 phút là thời gian cố hồi sinh proxy để thế chỗ)
+        $accountsNotHaveProxy = Bot::where('is_active', true)->where('proxy', null)->where('updated_at', '<=', Carbon::now()->subMinutes(5)->toDateTimeString())->get();
         foreach ($accountsNotHaveProxy as $accountNotHaveProxy) {
             $getProxy = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
             if ($getProxy) {
@@ -23,6 +23,8 @@ class ProxyController extends Controller
                 $accountNotHaveProxy->count_error = 0;
                 $accountNotHaveProxy->error_log = 'Đã thay mới proxy cho tài khoản ' . $accountNotHaveProxy->id . ' lúc ' . date("d/m/Y H:i:s") . '';
                 $accountNotHaveProxy->save();
+
+                $getProxy->bot_id = $accountNotHaveProxy->id;
                 $getProxy->save();
 
                 sendMessageTelegram('Đã thay mới proxy cho tài khoản ' . $accountNotHaveProxy->id . ' lúc ' . date("d/m/Y H:i:s") . '');
