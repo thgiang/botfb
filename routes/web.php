@@ -57,6 +57,16 @@ Route::get('test', function () {
 //    }
 //    return $botsDuplicate;
 
-    $errorBots = Bot::get();
-    return $errorBots->count();
+//    $allProxies = \App\Models\SystemProxy::get();
+//    $freeProxies = $allProxies->where('bot_id', 0);
+
+//    $proxiesAreUsingInProxyTable = \App\Models\SystemProxy::where('bot_id', '!=', 0)->pluck('proxy')->toArray();
+//    $proxiesAreUsingInBotsTable = Bot::where('proxy', '!=', null)->pluck('proxy')->toArray();
+//    $proxiesNotFreeButNotWorkInBotsTable = array_diff($proxiesAreUsingInProxyTable, $proxiesAreUsingInBotsTable);
+//    echo "Có " . count($proxiesAreUsingInProxyTable) . " proxy đang làm việc trong bảng proxy <br>";
+//    echo "Có " . count($proxiesAreUsingInBotsTable) . " proxy đang làm việc trong bảng bots <br>";
+
+//    $errorBots = Bot::get();
+//    return $errorBots->count();
+    return getPostsFromGroup("sb=_Z1EX4dy3P0T-RuJ6DZuukWA; datr=_Z1EX2-WrVgSKj2a8foM7dZU; locale=vi_VN; c_user=100010388822828; xs=30%3AB0PJv-H1Nopp9A%3A2%3A1598336383%3A12879%3A6191; spin=r.1002564417_b.trunk_t.1598336384_s.1_v.2_; fr=1hfYUSRIR0YIBCNsd.AWU0Ks9eKhO1s1xIQ1ItNquPqP8.BfRJ39.Np.F9E.0.0.BfRK2G.AWULqfdc; wd=704x937; presence=EDvF3EtimeF1598336467EuserFA21B10388822828A2EstateFDutF1598336467603CEchF_7bCC", "1598779013494485", "103.121.89.89:680");
 });

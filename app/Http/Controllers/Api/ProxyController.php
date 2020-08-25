@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bot;
 use App\Models\SystemProxy;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ProxyController extends Controller
 {
@@ -30,6 +31,18 @@ class ProxyController extends Controller
                 sendMessageTelegram('Đã thay mới proxy cho tài khoản ' . $accountNotHaveProxy->id . ' lúc ' . date("d/m/Y H:i:s") . '');
             }
         }
+
+        // Có những proxy bị đánh dấu là đang làm việc, nhưng thực tế chả con bot nào dùng. Lỗi từ đâu đấy sẽ tìm dần, nhưng trước mắt phải auto chuyển các proxy này về free đã
+        $proxiesAreUsingInProxyTable = SystemProxy::where('bot_id', '!=', 0)->pluck('proxy')->toArray();
+        $proxiesAreUsingInBotsTable = Bot::where('proxy', '!=', null)->pluck('proxy')->toArray();
+        $proxiesNotFreeButNotWorkInBotsTable = array_diff($proxiesAreUsingInProxyTable, $proxiesAreUsingInBotsTable);
+        foreach ($proxiesNotFreeButNotWorkInBotsTable as $proxyNotFreeButNotWorkInBotsTable) {
+            SystemProxy::where('proxy', $proxyNotFreeButNotWorkInBotsTable)->update([
+                'bot_id' => 0
+            ]);
+        }
+//    echo "Có " . count($proxiesAreUsingInProxyTable) . " proxy đang làm việc trong bảng proxy <br>";
+//    echo "Có " . count($proxiesAreUsingInBotsTable) . " proxy đang làm việc trong bảng bots <br>";
 
         echo "========================<br>";
         echo "Cập nhật tất cả proxy đang có";

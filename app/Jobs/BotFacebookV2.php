@@ -59,13 +59,6 @@ class BotFacebookV2 implements ShouldQueue
         $bot->trace_code = $traceCode;
         $bot->save();
 
-        // Chuẩn bị proxy
-        if (!$this->CheckBotProxy($bot)) {
-            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
-            return;
-        }
-        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
-
         // ƯU TIÊN SỐ 1: white_list
         if ($bot->white_list_run_mode == BOT_WHITE_MODE_ASAP && !empty($bot->white_list)) {
             BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Rơi vào trường hợp BOT_SOURCE_WHITE_LIST_ASAP');
@@ -156,6 +149,34 @@ class BotFacebookV2 implements ShouldQueue
         $tryFindPost = 0;
         $newsFeedIsEmpty = true;
 
+        // Chuẩn bị proxy
+        if (!$this->CheckBotProxy($bot)) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
+            return false;
+        }
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
+
+        // Chuẩn bị cookie
+        if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
+            // Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
+            if ($this->CheckBotProxy($bot)) {
+                $bot->count_error = 10;
+                $bot->error_log = "Cookie die. Bot dừng chạy lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
+            } else {
+
+                $bot->proxy = null;
+                $bot->count_error = 10;
+                $bot->error_log = "Proxy die. Ktra lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
+            }
+            return false;
+        } else {
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
+        }
+
         BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Tìm bài trên news feed');
 
         $ignoreFbIds = explode("\n", str_replace("\r", "", $bot->black_list));
@@ -207,6 +228,33 @@ class BotFacebookV2 implements ShouldQueue
 
     public function BotWhiteList(Bot $bot, $mode = BOT_SOURCE_WHITE_LIST_ASAP)
     {
+        // Chuẩn bị proxy
+        if (!$this->CheckBotProxy($bot)) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
+            return false;
+        }
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
+
+        if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
+            // Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
+            if ($this->CheckBotProxy($bot)) {
+                $bot->count_error = 10;
+                $bot->error_log = "Cookie die. Bot dừng chạy lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
+            } else {
+
+                $bot->proxy = null;
+                $bot->count_error = 10;
+                $bot->error_log = "Proxy die. Ktra lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
+            }
+            return false;
+        } else {
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
+        }
+
         $whiteIds = WhiteListId::where('bot_id', $this->botId)->orderBy('last_run_time', 'ASC')->get();
         if (!$whiteIds) {
             $oldBotWhiteList = $bot->white_list;
@@ -255,6 +303,32 @@ class BotFacebookV2 implements ShouldQueue
 
     public function BotWhiteGroup(Bot $bot, $mode = BOT_SOURCE_WHITE_GROUP_ASAP)
     {
+        // Chuẩn bị proxy
+        if (!$this->CheckBotProxy($bot)) {
+            BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Proxy die, dừng bot');
+            return false;
+        }
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, ' Proxy OK');
+
+        if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
+            // Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
+            if ($this->CheckBotProxy($bot)) {
+                $bot->count_error = 10;
+                $bot->error_log = "Cookie die. Bot dừng chạy lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
+            } else {
+                $bot->proxy = null;
+                $bot->count_error = 10;
+                $bot->error_log = "Proxy die. Ktra lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
+            }
+            return false;
+        } else {
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
+        }
+
         $whiteIds = WhiteGroupId::where('bot_id', $this->botId)->orderBy('last_run_time', 'ASC')->get();
         if (!$whiteIds) {
             $oldBotWhiteGroup = $bot->white_group;
@@ -295,7 +369,9 @@ class BotFacebookV2 implements ShouldQueue
                     }
                 } else {
                     BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Không quét đc bài viết nào trong group cả. getPostsFromGroup($cookie, $fb_id, $proxy)', array('cookie' => $bot->cookie, 'fb_id' => $whiteId->fb_id, 'proxy' => $bot->proxy));
-                    return false;
+                    $whiteId->last_run_time = time();
+                    $whiteId->save();
+                    continue;
                 }
 
                 foreach ($posts as $post) {
@@ -370,30 +446,30 @@ class BotFacebookV2 implements ShouldQueue
      */
     public function BotFocusToSpecialPost(Bot $bot, $fbPostId, $source = BOT_SOURCE_WHITE_LIST_ASAP)
     {
-		if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
-			// Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
-			if ($this->CheckBotProxy($bot)) {
-				$bot->count_error = 10;
-				$bot->error_log("Cookie die. Bot dừng chạy lúc ".date("d/m/Y H:i:s", time()));
-				$bot->save();
-				BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
-			} else {
-				
-				$bot->proxy = null;
-				$bot->count_error = 10;
-				$bot->error_log = "Proxy die. Ktra lúc ".date("d/m/Y H:i:s", time());
-				$bot->save();
-				BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
-			}
-			return false;
-		} else {
-			BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
-		}
-		
+        if (!getBasicInfoFromCookie($bot->cookie, $bot->proxy)) {
+            // Trường hợp cookie die. Đáng lẽ vào đc tới đây thì proxy đã ok rồi nhưng cứ check lại cho chắc chắn 100000%
+            if ($this->CheckBotProxy($bot)) {
+                $bot->count_error = 10;
+                $bot->error_log = "Cookie die. Bot dừng chạy lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die rồi, cho acc nghỉ chơi luôn');
+            } else {
+
+                $bot->proxy = null;
+                $bot->count_error = 10;
+                $bot->error_log = "Proxy die. Ktra lúc " . date("d/m/Y H:i:s", time());
+                $bot->save();
+                BotTrace::SaveTrace($bot->trace_code, false, $bot->id, $bot->facebook_uid, 'Cookie die nhưng proxy cũng die nên chưa biết nguyên nhân. Bot tạm dừng chờ lần chạy sau');
+            }
+            return false;
+        } else {
+            BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Cookie và proxy vẫn sống');
+        }
+
         $commentOn = false;
         $reactionOn = false;
-		BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
-	
+        BotTrace::SaveTrace($bot->trace_code, true, $bot->id, $bot->facebook_uid, 'Bắt đầu chạy BotFocusToSpecialPost', array('comment_on' => $commentOn, 'reaction_on' => $reactionOn, 'fb_post_id' => $fbPostId));
+
         // Ktra xem cần làm hành động gì (comment, reaction)
         switch ($source) {
             case BOT_SOURCE_WHITE_LIST_ASAP:
@@ -429,7 +505,7 @@ class BotFacebookV2 implements ShouldQueue
                 }
                 break;
         }
-        
+
 
         // Lấy FBDTG
         $fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
@@ -579,37 +655,32 @@ class BotFacebookV2 implements ShouldQueue
 
     public function CheckBotProxy(Bot $bot)
     {
-        if (empty($bot->proxy) || count(explode(':', $bot->proxy)) !== 2) {
-            $bot->proxy = null;
-            $bot->save();
-        } else {
-            // Kiểm tra proxy hoạt động ok không
-            $tryTestProxy = 0;
-            do {
-                if ($tryTestProxy >= 3) {
-                    $proxyController = new ProxyController();
-                    sendMessageTelegram('Proxy của tài khoản bị die, thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
-                    $replaceProxy = $proxyController->replaceProxy($bot->proxy, $bot->id);
+		// Kiểm tra proxy hoạt động ok không
+		$tryTestProxy = 0;
+		do {
+			if ($tryTestProxy >= 3) {
+				$proxyController = new ProxyController();
+				sendMessageTelegram('Proxy của tài khoản bị die, thay proxy mới lúc ' . date("d/m/Y H:i:s") . '');
+				$replaceProxy = $proxyController->replaceProxy($bot->proxy, $bot->id);
 
-                    // Nếu lấy proxy mới thất bại (do kho hết proxy) thì chuyển proxy của acc thành null để hàm maintainProxies tự cấp phát proxy mới khi kho có
-                    if ($replaceProxy == false) {
-                        $bot->count_error = config('bot.max_try_time');
-                        $bot->error_log = 'Proxy của tài khoản bị die, không lấy được proxy mới, tài khoản dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
-                        $bot->proxy = null;
-                        $bot->save();
-                        sendMessageTelegram('Proxy của bot ' . $bot->id . ' bị die, yêu cầu thay mới nhưng kho hết proxy');
-                        return true;
-                    } else {
-                        $bot->error_log = 'Proxy của tài khoản bị die, đã thay proxy mới lúc ' . date("d/m/Y H:i:s") . '';
-                        $bot->proxy = $replaceProxy;
-                        $bot->save();
-                        return true;
-                    }
-                }
-                $checkProxy = checkProxy($bot->proxy);
-                $tryTestProxy++;
-            } while ($checkProxy == false);
-            return true;
-        }
+				// Nếu lấy proxy mới thất bại (do kho hết proxy) thì chuyển proxy của acc thành null để hàm maintainProxies tự cấp phát proxy mới khi kho có
+				if ($replaceProxy == false) {
+					$bot->count_error = config('bot.max_try_time');
+					$bot->error_log = 'Proxy của tài khoản bị die, không lấy được proxy mới, tài khoản dừng chạy lúc ' . date("d/m/Y H:i:s") . '';
+					$bot->proxy = null;
+					$bot->save();
+					sendMessageTelegram('Proxy của bot ' . $bot->id . ' bị die, yêu cầu thay mới nhưng kho hết proxy');
+					return false;
+				} else {
+					$bot->error_log = 'Proxy của tài khoản bị die, đã thay proxy mới lúc ' . date("d/m/Y H:i:s") . '';
+					$bot->proxy = $replaceProxy;
+					$bot->save();
+					return true;
+				}
+			}
+			$checkProxy = checkProxy($bot->proxy);
+			$tryTestProxy++;
+		} while ($checkProxy == false);
+		return true;
     }
 }
