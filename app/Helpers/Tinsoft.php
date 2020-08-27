@@ -15,7 +15,7 @@ function getTinsoftProxy()
     $getNowProxy = @file_get_contents("http://proxy.tinsoftsv.com/api/getProxy.php?key=" . $tinsoftKey);
     if ($getNowProxy) {
         $getNowProxy = json_decode($getNowProxy);
-        if (($getNowProxy->success == false || $getNowProxy->next_change == 0) && $allowRequest == true) {
+        if (($getNowProxy->success == false || $getNowProxy->next_change == 0 || !isset($getNowProxy->proxy)) && $allowRequest == true) {
             $needNewProxy = true;
         } else {
             $proxy = $getNowProxy->proxy;
