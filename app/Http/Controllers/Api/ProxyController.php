@@ -12,6 +12,29 @@ class ProxyController extends Controller
 {
     private $proxyKey = "6fbGkqVxpKM2L8FvRZc1zy4d3mjCwJBD";
 
+    public function index(Request $request)
+    {
+        $limit = isset($request->limit) ? $request->limit : 10;
+        if (isset($request->bot_id)) {
+            $proxies = SystemProxy::where('bot_id', $request->bot_id)->paginate($limit);
+        } else {
+            $proxies = SystemProxy::paginate($limit);
+        }
+
+        if ($proxies) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Lấy danh sách proxy thành công!',
+                'data' => $proxies
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Lấy danh sách proxy thất bại!'
+        ]);
+    }
+
     // TODO Proxy hết hạn thì chỉ gia hạn số ngày = hạn sử dụng của bot đang dùng proxy đấy thôi, không fix cứng tránh phí
     public function maintainProxies()
     {

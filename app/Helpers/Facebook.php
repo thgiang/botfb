@@ -107,6 +107,7 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
         $commentContent = $commentContent . "&photo_ids[" . $photoId . "]=" . $photoId;
     }
 
+//    CURLOPT_POSTFIELDS => $commentContent . "&privacy_value=0&conversation_guide_session_id=&conversation_guide_shown=none&waterfall_source=photo_comment&submit=%u0110%u0103ng&m_sess=&fb_dtsg=" . $dtsg . "&__a=AYnHMZ8--2zFj8rJX4zb3i53j5KqZc-MNwhEDDC9EIZtsvVv1XU-sdTG62raS8gRAhtSHjZPv7CUwAiA1tCXznN4qh_vpKKOuXgAEEloT9mMBQ"
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -119,7 +120,7 @@ function commentPostByCookie($cookie, $dtsg, $postID, $commentContent, $stickerI
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => $commentContent . "&privacy_value=0&conversation_guide_session_id=&conversation_guide_shown=none&waterfall_source=photo_comment&submit=%u0110%u0103ng&m_sess=&fb_dtsg=" . $dtsg . "&__a=AYnHMZ8--2zFj8rJX4zb3i53j5KqZc-MNwhEDDC9EIZtsvVv1XU-sdTG62raS8gRAhtSHjZPv7CUwAiA1tCXznN4qh_vpKKOuXgAEEloT9mMBQ",
+        CURLOPT_POSTFIELDS => $commentContent . "&privacy_value=0&conversation_guide_session_id=&conversation_guide_shown=none&waterfall_source=photo_comment&submit=%u0110%u0103ng&m_sess=&fb_dtsg=" . $dtsg . "&__a=" . $dtsg,
         CURLOPT_HTTPHEADER => array(
             "authority: m.facebook.com",
             "x-requested-with: XMLHttpRequest",
@@ -471,8 +472,9 @@ function uploadImageToFacebook($imageURL, $cookie, $dtsg, $text = null, $proxy =
     }
     $curl = curl_init();
 
+//    waterfall_id=bec27f53989369fe074a97aead0d03eb
     curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://upload.facebook.com/_mupload_/photo/x/saveunpublished/?allow_spherical_photo=true&thumbnail_width=80&thumbnail_height=80&waterfall_id=bec27f53989369fe074a97aead0d03eb&waterfall_app_name=web_m_touch&waterfall_source=photo_comment&fb_dtsg=" . $dtsg . "&jazoest=21951&m_sess=&__csr=&__req=h&__a=" . $dtsg,
+        CURLOPT_URL => "https://upload.facebook.com/_mupload_/photo/x/saveunpublished/?allow_spherical_photo=true&thumbnail_width=80&thumbnail_height=80&waterfall_id=" . md5($dtsg) . "&waterfall_app_name=web_m_touch&waterfall_source=photo_comment&fb_dtsg=" . $dtsg . "&jazoest=21951&m_sess=&__csr=&__req=h&__a=" . $dtsg,
         CURLOPT_PROXY => $proxy,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",

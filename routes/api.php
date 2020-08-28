@@ -24,6 +24,9 @@ Route::get('/bots/logs', 'Api\BotController@logs');
 Route::get('/bots/delete', 'Api\BotController@delete');
 Route::post('/bots/check', 'Api\BotController@checkLiveCookie');
 
+Route::get('proxies', 'Api\ProxyController@index');
+Route::get('proxies/maintain', 'Api\ProxyController@maintainProxies');
+
 Route::get('test', function () {
     return 'test';
 });
@@ -50,7 +53,7 @@ Route::get('/test', function() {
 	$bot = Bot::where('id', 29)->first();
 	$fbDtg = getFbDtsg($bot->cookie, $bot->proxy);
 	$photoId = uploadImageToFacebook('https://codedao.jas.plus/image_generator/examples/her/19.jpg', $bot->cookie, $fbDtg, 'Hóa thú hok?', $bot->proxy);
-	
+
 	// Gửi comment
     $comment = commentPostByCookie($bot->cookie, $fbDtg, '165324818540387', 'Siêu đẹp nha', null, $photoId, $bot->proxy);
 	print_r($comment);

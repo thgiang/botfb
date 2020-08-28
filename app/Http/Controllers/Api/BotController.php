@@ -197,6 +197,8 @@ class BotController extends Controller
         $limit = isset($request->limit) ? $request->limit : 10;
         if (isset($request->bot_id)) {
             $bots = Bot::where('id', $request->bot_id)->orWhere('facebook_uid', $request->bot_id)->paginate($limit)->appends(request()->except('page'));
+        } elseif (isset($request->count_error)) {
+            $bots = Bot::where('count_error', $request->count_error)->paginate($limit)->appends(request()->except('page'));
         } else {
             $bots = Bot::paginate($limit);
         }

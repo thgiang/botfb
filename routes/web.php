@@ -30,8 +30,6 @@ Route::get('add', function () {
     return view('bots.add');
 });
 
-Route::get('proxies', 'Api\ProxyController@maintainProxies');
-
 Route::get('test', function () {
 //    $cookie = 'c_user=100048847779968;locale=vi_VN;wd=2195x1093;m_pixel_ratio=1.75;fr=1KxwZ6bAHsR693gwc.AWVGTsysEFcQU0WL2dAnc6zTrsQ.BfPqyr.HW.F9B.0.0.BfQjDW.AWXZ94S5;sb=q6w-X0IkJW12l8xCtTGVWWcR;datr=q6w-XxM0GBYm_44W-l9PkUV-;dpr=1.75;xs=23%3AWbZ_-Dc--LBChQ%3A2%3A1598173398%3A530%3A6194;spin=r.1002557702_b.trunk_t.1598173400_s.1_v.2_;presence=EDvF3EtimeF1598173402EuserFA21B48847779968A2EstateFDutF1598173402908CEchF_7bCC;=undefined;';
 //    $proxy = "103.121.89.89:675";
@@ -68,5 +66,12 @@ Route::get('test', function () {
 
 //    $errorBots = Bot::get();
 //    return $errorBots->count();
-    return getPostsFromGroup("sb=_Z1EX4dy3P0T-RuJ6DZuukWA; datr=_Z1EX2-WrVgSKj2a8foM7dZU; locale=vi_VN; c_user=100010388822828; xs=30%3AB0PJv-H1Nopp9A%3A2%3A1598336383%3A12879%3A6191; spin=r.1002564417_b.trunk_t.1598336384_s.1_v.2_; fr=1hfYUSRIR0YIBCNsd.AWU0Ks9eKhO1s1xIQ1ItNquPqP8.BfRJ39.Np.F9E.0.0.BfRK2G.AWULqfdc; wd=704x937; presence=EDvF3EtimeF1598336467EuserFA21B10388822828A2EstateFDutF1598336467603CEchF_7bCC", "1598779013494485", "103.121.89.89:680");
+
+    // Những bot die 2 ngày mà chưa update, lấy list để hỏi thằng kia đống này còn chạy không
+//    $bots = Bot::where('count_error', 10)->where('updated_at', '<=', Carbon::now()->subDays(1))->get();
+//    foreach ($bots as $bot) {
+//        echo $bot->facebook_uid . "|" . $bot->error_log . "|" . $bot->updated_at . "<br>";
+//
+//    }
+//    return $bots;
 });
