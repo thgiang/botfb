@@ -47,7 +47,7 @@ class BotController extends Controller
                     sendMessageTelegram('Kho proxy bị hết');
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau!'
+                        'message' => 'Không tìm được proxy phù hợp, vui lòng thử lại sau x!'
                     ]);
                 }
                 $request['proxy'] = $getProxyFromDB->proxy;
@@ -92,6 +92,12 @@ class BotController extends Controller
             ]);
         }
 
+        // Check cookie live
+        $fbDtg = getFbDtsg($request->cookie, $request->proxy);
+        if ($fbDtg) {
+            saveLoginDevice($request->cookie, $fbDtg, $request->proxy);
+        }
+        
         // Lưu bot
         if (!$request->bot_id) {
             // Nếu là thêm mới, phải check xem bot này đã từng được thêm chưa

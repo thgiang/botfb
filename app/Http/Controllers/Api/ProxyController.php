@@ -229,16 +229,19 @@ class ProxyController extends Controller
 
     public function replaceProxy($proxyDie, $botID)
     {
-        // Chuyển proxy bị die về kho, để trạng thái thành die
-        SystemProxy::where('proxy', $proxyDie)->update(['is_live' => false, 'bot_id' => 0]);
+        // Tìm xem proxy cũ (đang die) có tồn tại trong DB không, nếu không tức là proxy khách thêm từ bên ngoài, giữ nguyên, không auto đổi
+        $oldProxy = SystemProxy::where('proxy', $proxyDie)->first();
+        if ($oldProxy) {
+            $oldProxy->update(['is_live' => false, 'bot_id' => 0]);
 
-        // Lấy 1 proxy mới
-        $getNewProxy = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
-        if ($getNewProxy) {
-            $getNewProxy->update(['bot_id' => $botID]);
-            return $getNewProxy->proxy;
-        } else {
-            return false;
+            // Lấy 1 proxy mới
+            $getNewProxy = SystemProxy::where('bot_id', 0)->where('is_live', true)->first();
+            if ($getNewProxy) {
+                $getNewProxy->update(['bot_id' => $botID]);
+                return $getNewProxy->proxy;
+            }
         }
+ 
+        return false;
     }
 }

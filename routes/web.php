@@ -74,4 +74,30 @@ Route::get('test', function () {
 //
 //    }
 //    return $bots;
+//    print_r(checkProxy("171.240.11.154:41821"));
+
+//    function testIP($proxy) {
+//        $curl = curl_init();
+//        curl_setopt_array($curl, array(
+//            CURLOPT_URL => "http://jas.plus/ip",
+//            CURLOPT_PROXY => $proxy,
+//            CURLOPT_RETURNTRANSFER => true,
+//            CURLOPT_ENCODING => "",
+//            CURLOPT_MAXREDIRS => 10,
+//            CURLOPT_TIMEOUT => 0,
+//            CURLOPT_FOLLOWLOCATION => false,
+//            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//            CURLOPT_CUSTOMREQUEST => "GET",
+//        ));
+//        $response = curl_exec($curl);
+//        echo "Truyền vào proxy: ".$proxy." => Nhận về ".$response." <br><br>";
+//    }
+//
+//    // Proxy của bác
+//    testIP("171.240.11.154:41821");
+//
+//    // Proxy của Tinsoft
+//    testIP("171.224.226.182:12520");
+
+//    print_r(getFbDtsg("c_user=100004791424629;spin=r.1002592822_b.trunk_t.1598714009_s.1_v.2_;datr=mXBKX1Rrj8bs671_dHAH9yQR;sb=mXBKX8pwT432w983Ug0VHQnt;xs=5%3AwfCeKY0_PlxfMA%3A2%3A1597291926%3A8954%3A6157%3A%3AAcVJjAC6nI9tlu6JnEgMMM4qhOljaitG_WhDPaMaxA;fr=1p3VA0Use9E7DgOtZ.AWXMuOSfD7wGsfObE59_-4XFxCk.BezeKh.zD.F9K.0.0.BfSn_l.AWXUCmTY;wd=929x888;presence=EDvF3EtimeF1598717923EuserFA21B04791424629A2EstateFDutF1598717923866CEchF_7bCC;|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36", "172.104.62.206:564"));
 });
